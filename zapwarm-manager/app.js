@@ -25,12 +25,12 @@ async function loadInstances() {
         const listEl = document.getElementById('instances-list');
         listEl.innerHTML = '';
 
-        if (!res.success || !res.data || res.data.length === 0) {
+        if (!res.success || !res.instances || res.instances.length === 0) {
             listEl.innerHTML = `<tr><td colspan="4" class="text-center py-8 text-gray-400">Nenhuma instância encontrada. Crie uma nova!</td></tr>`;
             return;
         }
 
-        res.data.forEach(inst => {
+        res.instances.forEach(inst => {
             let statusBadge = '';
             if (inst.status === 'connected') {
                 statusBadge = `<span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold flex items-center w-fit gap-1"><span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span> OPEN</span>`;
@@ -103,34 +103,35 @@ async function connectInstance(name, token) {
     document.getElementById('qr-image').classList.add('hidden');
 
     try {
-        const res = await apiFetch('/instance/qrcode', {
-            headers: { instance: name, token: token }
-        });
-
-        if (res.success && res.base64) {
+        // Como o qrcode retorna uma imagem e não um JSON, injetamos direto no SRC
+        const qrUrl = `${API_BASE}/instance/qrcode?instance=${name}&token=${token}&t=${Date.now()}`;
+        
+        const img = document.getElementById('qr-image');
+        img.onload = () => {
             document.getElementById('qr-loading').classList.add('hidden');
-            document.getElementById('qr-image').src = res.base64;
-            document.getElementById('qr-image').classList.remove('hidden');
-            
-            // Fica verificando se conectou
-            const interval = setInterval(async () => {
-                const statusRes = await apiFetch('/instance/status', { headers: { instance: name, token: token } });
-                if (statusRes.success && statusRes.status === 'connected') {
-                    clearInterval(interval);
-                    closeQrModal();
-                    Swal.fire('Conectado!', 'WhatsApp pareado com sucesso.', 'success');
-                    loadInstances();
-                }
-            }, 3000);
-            
-            window.qrCheckInterval = interval; // Salva para limpar se fechar o modal
-        } else {
-            closeQrModal();
-            Swal.fire('Aviso', res.message || res.error || 'Já está conectado ou erro ao buscar QR.', 'info');
-        }
+            img.classList.remove('hidden');
+        };
+        img.onerror = () => {
+            // Se o QR Code ainda não gerou, fica mostrando loading
+            setTimeout(() => { img.src = `${API_BASE}/instance/qrcode?instance=${name}&token=${token}&t=${Date.now()}`; }, 2000);
+        };
+        img.src = qrUrl;
+        
+        // Fica verificando se conectou
+        const interval = setInterval(async () => {
+            const statusRes = await apiFetch('/instance/status', { headers: { instance: name, token: token } });
+            if (statusRes.success && statusRes.status === 'connected') {
+                clearInterval(interval);
+                closeQrModal();
+                Swal.fire('Conectado!', 'WhatsApp pareado com sucesso.', 'success');
+                loadInstances();
+            }
+        }, 3000);
+        
+        window.qrCheckInterval = interval;
     } catch (e) {
         closeQrModal();
-        Swal.fire('Erro', 'Falha na comunicação com a API.', 'error');
+        Swal.fire('Erro', 'Falha na comunicação.', 'error');
     }
 }
 
