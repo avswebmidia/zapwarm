@@ -1,4 +1,4 @@
-const API_BASE = window.location.origin; // Usa o domínio dinâmico (onde está hospedado)
+const API_BASE = window.location.origin.includes('file://') ? 'https://api.zapbulk.com.br' : window.location.origin;
 // Na versão final, a Senha Global deve vir de um sistema de login
 const GLOBAL_API_KEY = 'SUA_SENHA_GLOBAL_AQUI'; 
 
@@ -30,36 +30,53 @@ async function loadInstances() {
             return;
         }
 
+        let total = res.instances.length;
+        let open = 0;
+        let closed = 0;
+
         res.instances.forEach(inst => {
             let statusBadge = '';
+            let isConnected = false;
+            
             if (inst.status === 'connected') {
-                statusBadge = `<span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold flex items-center w-fit gap-1"><span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span> OPEN</span>`;
+                statusBadge = `<span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold flex items-center w-fit gap-1.5"><span class="w-2 h-2 bg-green-500 rounded-full"></span> OPEN</span>`;
+                isConnected = true;
+                open++;
             } else if (inst.status === 'connecting' || inst.status === 'qrcode') {
-                statusBadge = `<span class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-semibold flex items-center w-fit gap-1"><span class="w-1.5 h-1.5 bg-yellow-500 rounded-full"></span> AGUARDANDO</span>`;
+                statusBadge = `<span class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-bold flex items-center w-fit gap-1.5"><span class="w-2 h-2 bg-yellow-500 rounded-full"></span> AGUARDANDO</span>`;
+                closed++;
             } else {
-                statusBadge = `<span class="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-semibold flex items-center w-fit gap-1"><span class="w-1.5 h-1.5 bg-red-500 rounded-full"></span> CLOSE</span>`;
+                statusBadge = `<span class="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-bold flex items-center w-fit gap-1.5"><span class="w-2 h-2 bg-red-500 rounded-full"></span> CLOSE</span>`;
+                closed++;
             }
 
+            let phoneDisplay = isConnected ? `<span class="text-gray-600 font-medium">${inst.phone || inst.name || 'Conectado'}</span>` : `<span class="text-gray-400 italic">Não conectado</span>`;
+
             listEl.innerHTML += `
-                <tr class="hover:bg-gray-50 transition-colors">
-                    <td class="py-4 px-6 font-medium text-gray-800 flex items-center gap-3">
-                        <div class="w-10 h-10 rounded bg-gray-100 flex items-center justify-center text-gray-500">
+                <tr class="hover:bg-gray-50 transition-colors group">
+                    <td class="py-4 px-6 font-semibold text-gray-700 flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 group-hover:bg-primary/10 group-hover:text-primary transition-colors">
                             <i class="fa-brands fa-whatsapp text-xl"></i>
                         </div>
                         ${inst.instance}
                     </td>
                     <td class="py-4 px-6">${statusBadge}</td>
-                    <td class="py-4 px-6 text-xs text-gray-500 font-mono">${inst.token || '---'}</td>
+                    <td class="py-4 px-6 text-sm">${phoneDisplay}</td>
                     <td class="py-4 px-6 text-right space-x-2">
-                        ${inst.status !== 'connected' ? 
-                            `<button onclick="connectInstance('${inst.instance}', '${inst.token}')" class="text-primary hover:text-emerald-700 font-medium transition-colors border border-primary px-3 py-1 rounded text-xs">Conectar (QR)</button>` 
+                        ${!isConnected ? 
+                            `<button onclick="connectInstance('${inst.instance}', '${inst.token}')" class="text-primary hover:bg-primary hover:text-white font-medium transition-colors border border-primary px-4 py-1.5 rounded-lg text-xs shadow-sm">Conectar (QR)</button>` 
                             : ''}
-                        <button onclick="configBot('${inst.instance}', '${inst.token}')" class="text-emerald-500 hover:text-emerald-700 transition-colors ml-2" title="Configurar IA"><i class="fa-solid fa-robot text-lg"></i></button>
-                        <button onclick="deleteInstance('${inst.instance}', '${inst.token}')" class="text-gray-400 hover:text-red-500 transition-colors ml-2" title="Excluir"><i class="fa-solid fa-trash text-lg"></i></button>
+                        <button onclick="configBot('${inst.instance}', '${inst.token}')" class="text-gray-400 hover:text-emerald-500 transition-colors ml-2 bg-gray-50 hover:bg-emerald-50 w-8 h-8 rounded" title="Configurar IA"><i class="fa-solid fa-robot"></i></button>
+                        <button onclick="deleteInstance('${inst.instance}', '${inst.token}')" class="text-gray-400 hover:text-red-500 transition-colors ml-1 bg-gray-50 hover:bg-red-50 w-8 h-8 rounded" title="Excluir"><i class="fa-solid fa-trash"></i></button>
                     </td>
                 </tr>
             `;
         });
+
+        // Atualizar Dashboard
+        document.getElementById('count-total').innerText = total;
+        document.getElementById('count-open').innerText = open;
+        document.getElementById('count-closed').innerText = closed;
     } catch (error) {
         console.error(error);
         document.getElementById('instances-list').innerHTML = `<tr><td colspan="4" class="text-center py-8 text-red-400">Erro ao carregar instâncias da API. Verifique se o servidor está rodando.</td></tr>`;
