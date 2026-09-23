@@ -324,8 +324,10 @@ async function loadSavedInstances() {
 // DOCUMENTAÇÃO HTML (Z-API Style)
 // ============================================
 
+app.use('/manager', express.static(path.join(__dirname, '../zapwarm-manager')));
+
 app.get('/', (req, res) => {
-  res.redirect('/docs');
+  res.redirect('/manager');
 });
 
 app.get('/docs', (req, res) => {
