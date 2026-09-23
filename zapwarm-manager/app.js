@@ -1,4 +1,4 @@
-const API_BASE = 'http://localhost:3000'; // Mude para o domínio/porta da sua API real
+const API_BASE = window.location.origin; // Usa o domínio dinâmico (onde está hospedado)
 // Na versão final, a Senha Global deve vir de um sistema de login
 const GLOBAL_API_KEY = 'SUA_SENHA_GLOBAL_AQUI'; 
 
