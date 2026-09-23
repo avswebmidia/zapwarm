@@ -1,4 +1,4 @@
-const API_BASE = window.location.origin.includes('file://') ? 'https://api.zapbulk.com.br' : window.location.origin;
+const API_BASE = 'https://api.zapbulk.com.br';
 // Na versão final, a Senha Global deve vir de um sistema de login
 const GLOBAL_API_KEY = 'SUA_SENHA_GLOBAL_AQUI'; 
 
