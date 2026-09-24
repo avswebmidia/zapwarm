@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#10b981">
+    <title>Zapwarm API - Webhooks</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="/manager/mobile.css">
+    <link rel="stylesheet" href="/manager/desktop-fix.css">
+</head>
+<body>
+    <div class="app-layout">
+        <div class="sidebar-overlay" onclick="closeSidebar()"></div>
+        
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1><i class="fa-solid fa-fire"></i> Zapwarm <span class="badge-api">API</span></h1>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="/manager/index.html" class="nav-item"><i class="fa-solid fa-server"></i><span>Instâncias</span></a>
+                <a href="/manager/mensagens.html" class="nav-item"><i class="fa-solid fa-paper-plane"></i><span>Mensagens</span></a>
+                <a href="/manager/agentes.html" class="nav-item"><i class="fa-solid fa-robot"></i><span>Agentes de IA</span></a>
+                <a href="/manager/fluxos.html" class="nav-item"><i class="fa-solid fa-diagram-project"></i><span>Fluxos</span><span class="nav-badge">Novo</span></a>
+                <a href="/manager/webhooks.html" class="nav-item active"><i class="fa-solid fa-bolt"></i><span>Webhooks</span></a>
+                <a href="/manager/configuracoes.html" class="nav-item"><i class="fa-solid fa-gear"></i><span>Configurações</span></a>
+                <a href="/docs" target="_blank" class="nav-item"><i class="fa-solid fa-book"></i><span>Documentação</span></a>
+            </nav>
+        </aside>
+        
+        <main class="main">
+            <header class="top-header">
+                <button class="hamburger-btn" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
+                <h2 class="header-title">Webhooks</h2>
+            </header>
+            
+            <div class="content">
+                <div class="content-wrapper" style="max-width:720px;margin:0 auto;">
+                    <div class="card" style="padding:24px;">
+                        <div style="display:flex;align-items:center;gap:16px;margin-bottom:24px;">
+                            <div style="width:56px;height:56px;background:#fef3c7;color:#f59e0b;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;">
+                                <i class="fa-solid fa-bolt"></i>
+                            </div>
+                            <div>
+                                <h3 style="font-size:17px;font-weight:700;margin:0 0 4px;color:#1e293b;">Configurar Webhook</h3>
+                                <p style="margin:0;font-size:13px;color:#64748b;">Receba eventos em tempo real no seu servidor</p>
+                            </div>
+                        </div>
+                        
+                        <div style="display:flex;flex-direction:column;gap:16px;">
+                            <div>
+                                <label class="label">INSTÂNCIA</label>
+                                <select id="webhook-instance" class="input">
+                                    <option value="">Carregando...</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="label">URL DO WEBHOOK</label>
+                                <input type="url" id="webhook-url" class="input" placeholder="https://seu-servidor.com/webhook">
+                            </div>
+                            
+                            <div>
+                                <label class="label">EVENTOS</label>
+                                <div style="display:flex;flex-direction:column;gap:12px;padding:12px 0;">
+                                    <label style="display:flex;align-items:center;gap:10px;font-size:14px;cursor:pointer;">
+                                        <input type="checkbox" value="message" checked style="width:20px;height:20px;accent-color:#10b981;"> Mensagens recebidas
+                                    </label>
+                                    <label style="display:flex;align-items:center;gap:10px;font-size:14px;cursor:pointer;">
+                                        <input type="checkbox" value="status" style="width:20px;height:20px;accent-color:#10b981;"> Status de conexão
+                                    </label>
+                                    <label style="display:flex;align-items:center;gap:10px;font-size:14px;cursor:pointer;">
+                                        <input type="checkbox" value="group" style="width:20px;height:20px;accent-color:#10b981;"> Eventos de grupos
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <button onclick="salvarWebhook()" class="btn btn-primary" style="width:100%;min-height:52px;font-size:15px;">
+                                <i class="fa-solid fa-save"></i> Salvar Webhook
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="/manager/app.js"></script>
+    <script>
+    async function carregarInstanciasWebhook() {
+        const res = await apiFetch('/instance/list');
+        const select = document.getElementById('webhook-instance');
+        select.innerHTML = '';
+        if (!res.success || !res.instances || res.instances.length === 0) {
+            select.innerHTML = '<option value="">Nenhuma instância</option>';
+            return;
+        }
+        res.instances.forEach(inst => {
+            const opt = document.createElement('option');
+            opt.value = inst.instance + '|' + inst.token;
+            opt.textContent = inst.instance;
+            select.appendChild(opt);
+        });
+    }
+
+    async function salvarWebhook() {
+        const selectVal = document.getElementById('webhook-instance').value;
+        const url = document.getElementById('webhook-url').value.trim();
+        const events = Array.from(document.querySelectorAll('input[type=checkbox]:checked')).map(c => c.value);
+
+        if (!selectVal || !url || events.length === 0) {
+            Swal.fire('Atenção', 'Preencha todos os campos.', 'warning');
+            return;
+        }
+
+        const parts = selectVal.split('|');
+        const instance = parts[0];
+        const token = parts[1];
+
+        Swal.fire({ title: 'Salvando...', didOpen: () => Swal.showLoading() });
+
+        try {
+            const res = await apiFetch('/webhook/set', {
+                method: 'POST',
+                headers: { instance: instance, token: token },
+                body: JSON.stringify({ url, events })
+            });
+            if (res.success) Swal.fire('Sucesso!', 'Webhook configurado.', 'success');
+            else Swal.fire('Erro', res.error || 'Falha.', 'error');
+        } catch (e) {
+            Swal.fire('Erro', e.message, 'error');
+        }
+    }
+
+    carregarInstanciasWebhook();
+    </script>
+</body>
+</html>

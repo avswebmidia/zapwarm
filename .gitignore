@@ -1,0 +1,39 @@
+# Dependências
+node_modules/
+*/node_modules/
+
+# Sessões do WhatsApp (dados sensíveis)
+sessions/
+*/sessions/
+
+# Arquivos de ambiente
+.env
+*.env
+
+# Backups
+*.bak
+*.bak.*
+*.bak-*
+*.corrompido.*
+*.old.*
+backup-*/
+backup-*/*
+
+# Templates (não usados em produção)
+head-template.html
+menu-template.html
+
+# Logs
+*.log
+npm-debug.log*
+
+# Sistema
+.DS_Store
+Thumbs.db
+*.swp
+
+# Configurações locais
+bot-configs.json
+groq-keys.json
+.env
+zapwarm-api/.env

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#10b981">
+    <title>Zapwarm API - Agentes de IA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="/manager/mobile.css">
+    <link rel="stylesheet" href="/manager/desktop-fix.css">
+    <style>
+        /* Grid de cards no desktop */
+        #agentes-list {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+        
+        @media (min-width: 768px) {
+            #agentes-list {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 20px;
+            }
+        }
+        
+        @media (min-width: 1280px) {
+            #agentes-list {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-layout">
+        <div class="sidebar-overlay" onclick="closeSidebar()"></div>
+        
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1><i class="fa-solid fa-fire"></i> Zapwarm <span class="badge-api">API</span></h1>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="/manager/index.html" class="nav-item"><i class="fa-solid fa-server"></i><span>Instâncias</span></a>
+                <a href="/manager/mensagens.html" class="nav-item"><i class="fa-solid fa-paper-plane"></i><span>Mensagens</span></a>
+                <a href="/manager/agentes.html" class="nav-item active"><i class="fa-solid fa-robot"></i><span>Agentes de IA</span></a>
+                <a href="/manager/fluxos.html" class="nav-item"><i class="fa-solid fa-diagram-project"></i><span>Fluxos</span><span class="nav-badge">Novo</span></a>
+                <a href="/manager/webhooks.html" class="nav-item"><i class="fa-solid fa-bolt"></i><span>Webhooks</span></a>
+                <a href="/manager/configuracoes.html" class="nav-item"><i class="fa-solid fa-gear"></i><span>Configurações</span></a>
+                <a href="/docs" target="_blank" class="nav-item"><i class="fa-solid fa-book"></i><span>Documentação</span></a>
+            </nav>
+        </aside>
+        
+        <main class="main">
+            <header class="top-header">
+                <button class="hamburger-btn" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
+                <h2 class="header-title">Agentes de IA</h2>
+            </header>
+            
+            <div class="content">
+                <div class="content-wrapper">
+                    
+                    <div class="card" style="padding:20px;margin-bottom:24px;display:flex;align-items:center;gap:16px;">
+                        <div style="width:56px;height:56px;background:#d1fae5;color:#10b981;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;">
+                            <i class="fa-solid fa-robot"></i>
+                        </div>
+                        <div>
+                            <h3 style="font-size:17px;font-weight:700;margin:0 0 4px;color:#1e293b;">Configure os robôs de atendimento</h3>
+                            <p style="margin:0;font-size:13px;color:#64748b;">Cada instância pode ter seu próprio agente IA com prompt personalizado</p>
+                        </div>
+                    </div>
+                    
+                    <div id="agentes-list">
+                        <div style="text-align:center;padding:48px 16px;color:#94a3b8;grid-column:1/-1;">
+                            <i class="fa-solid fa-spinner fa-spin" style="font-size:24px;"></i>
+                            <p style="margin-top:8px;">Carregando instâncias...</p>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="/manager/app.js"></script>
+    <script>
+    async function carregarAgentes() {
+        const list = document.getElementById('agentes-list');
+        if (!list) return;
+        
+        try {
+            const res = await apiFetch('/instance/list');
+            list.innerHTML = '';
+            
+            if (!res.success || !res.instances || res.instances.length === 0) {
+                list.innerHTML = '<div style="text-align:center;padding:48px 16px;color:#94a3b8;grid-column:1/-1;">Nenhuma instância encontrada.</div>';
+                return;
+            }
+            
+            for (const inst of res.instances) {
+                const nome = inst.instance || inst.name;
+                const isConnected = inst.connected || inst.status === 'connected';
+                let config = { active: false, prompt: '' };
+                
+                try {
+                    const botRes = await apiFetch('/bot/config', { headers: { instance: nome, token: inst.token } });
+                    if (botRes.success && botRes.config) config = botRes.config;
+                } catch (e) {}
+                
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.style.padding = '20px';
+                card.style.border = config.active ? '2px solid #10b981' : '1px solid #f1f5f9';
+                
+                card.innerHTML = `
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+                        <div style="display:flex;align-items:center;gap:12px;">
+                            <div style="width:48px;height:48px;border-radius:50%;background:${isConnected ? '#d1fae5' : '#f1f5f9'};color:${isConnected ? '#10b981' : '#94a3b8'};display:flex;align-items:center;justify-content:center;font-size:22px;">
+                                <i class="fa-brands fa-whatsapp"></i>
+                            </div>
+                            <div>
+                                <div style="font-weight:700;font-size:16px;color:#1e293b;">${nome}</div>
+                                <div style="font-size:12px;color:${isConnected ? '#059669' : '#94a3b8'};">
+                                    ${isConnected ? '● Conectada' : '○ Desconectada'}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom:16px;">
+                        <span style="font-size:12px;font-weight:700;padding:4px 12px;border-radius:999px;background:${config.active ? '#d1fae5' : '#f1f5f9'};color:${config.active ? '#059669' : '#94a3b8'};">
+                            ${config.active ? '🤖 IA ATIVA' : '😴 IA DESLIGADA'}
+                        </span>
+                    </div>
+                    
+                    <p style="font-size:13px;color:#64748b;margin:0 0 16px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;line-height:1.5;min-height:58px;">
+                        ${config.prompt ? config.prompt.substring(0, 180) + (config.prompt.length > 180 ? '...' : '') : 'Nenhum prompt configurado'}
+                    </p>
+                    
+                    <button onclick="configBot('${nome}', '${inst.token}')" class="btn btn-primary" style="width:100%;min-height:44px;">
+                        <i class="fa-solid fa-cog"></i> Configurar IA
+                    </button>
+                `;
+                
+                list.appendChild(card);
+            }
+        } catch (e) {
+            list.innerHTML = '<div style="text-align:center;padding:48px 16px;color:#dc2626;grid-column:1/-1;">Erro: ' + e.message + '</div>';
+        }
+    }
+
+    carregarAgentes();
+    </script>
+</body>
+</html>

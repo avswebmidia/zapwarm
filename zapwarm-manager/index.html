@@ -1,146 +1,152 @@
 <!DOCTYPE html>
-<html lang="pt-BR" class="bg-gray-50 text-gray-900">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zapwarm Manager PRO</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#10b981">
+    <title>Zapwarm API - Instâncias</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: { colors: { primary: '#10b981', dark: '#1e293b', darkLighter: '#273549' } }
-            }
-        }
-    </script>
+    <link rel="stylesheet" href="/manager/mobile.css">
+    <link rel="stylesheet" href="/manager/desktop-fix.css">
 </head>
-<body class="flex h-screen overflow-hidden font-sans antialiased">
-
-    <!-- Sidebar -->
-    <aside class="w-64 bg-dark text-white flex flex-col shadow-xl z-20 relative">
-        <div class="h-20 flex items-center px-6 border-b border-gray-700">
-            <h1 class="text-2xl font-bold text-primary flex items-center gap-2">
-                <i class="fa-solid fa-fire"></i> Zapwarm <span class="text-xs font-normal text-gray-400 mt-1">API</span>
-            </h1>
-        </div>
+<body>
+    <div class="app-layout">
         
-        <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
-            <a href="#" class="flex items-center gap-3 px-4 py-3 bg-darkLighter text-white border-l-4 border-primary rounded-r-lg transition-colors font-medium shadow-sm">
-                <i class="fa-solid fa-server w-5 text-center"></i> Instâncias
-            </a>
-            <a href="#" class="flex items-center gap-3 px-4 py-3 text-gray-400 hover:bg-darkLighter hover:text-white rounded-lg transition-colors font-medium">
-                <i class="fa-solid fa-paper-plane w-5 text-center"></i> Mensagens
-            </a>
-            <a href="#" class="flex items-center gap-3 px-4 py-3 text-emerald-400 hover:bg-darkLighter hover:text-emerald-300 rounded-lg transition-colors font-medium" onclick="openAIAgents()">
-                <i class="fa-solid fa-robot w-5 text-center"></i> Agentes de IA 
-                <span class="ml-auto text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full font-bold">Novo</span>
-            </a>
-            <a href="#" class="flex items-center gap-3 px-4 py-3 text-gray-400 hover:bg-darkLighter hover:text-white rounded-lg transition-colors font-medium">
-                <i class="fa-solid fa-bolt w-5 text-center"></i> Webhooks
-            </a>
-            <a href="#" class="flex items-center gap-3 px-4 py-3 text-gray-400 hover:bg-darkLighter hover:text-white rounded-lg transition-colors font-medium mt-4">
-                <i class="fa-solid fa-gear w-5 text-center"></i> Configurações
-            </a>
-            <a href="/docs" class="flex items-center gap-3 px-4 py-3 text-gray-400 hover:bg-darkLighter hover:text-white rounded-lg transition-colors font-medium mt-auto" target="_blank">
-                <i class="fa-solid fa-book w-5 text-center"></i> Documentação
-            </a>
-        </nav>
-    </aside>
-
-    <!-- Main Content -->
-    <main class="flex-1 flex flex-col overflow-hidden relative bg-[#f8fafc]">
-        <!-- Header -->
-        <header class="h-20 bg-white shadow-sm flex items-center justify-between px-8 z-10 border-b border-gray-200">
-            <h2 class="text-xl font-bold text-gray-800">Gerenciar Instâncias</h2>
-            <div class="flex items-center gap-4">
-                <div class="relative">
-                    <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                    <input type="text" placeholder="Buscar instância..." class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 w-64">
-                </div>
-                <button onclick="openCreateModal()" class="bg-primary hover:bg-emerald-600 text-white px-5 py-2.5 rounded-lg text-sm font-bold shadow-md flex items-center gap-2 transition-all hover:shadow-lg">
-                    <i class="fa-solid fa-plus"></i> Nova Instância
-                </button>
+        <div class="sidebar-overlay" onclick="closeSidebar()"></div>
+        
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1>
+                    <i class="fa-solid fa-fire"></i>
+                    Zapwarm
+                    <span class="badge-api">API</span>
+                </h1>
             </div>
-        </header>
-
-        <!-- Content Body -->
-        <div class="flex-1 overflow-y-auto p-8" id="main-content">
+            <nav class="sidebar-nav">
+                <a href="/manager/index.html" class="nav-item active">
+                    <i class="fa-solid fa-server"></i>
+                    <span>Instâncias</span>
+                </a>
+                <a href="/manager/mensagens.html" class="nav-item">
+                    <i class="fa-solid fa-paper-plane"></i>
+                    <span>Mensagens</span>
+                </a>
+                <a href="/manager/agentes.html" class="nav-item">
+                    <i class="fa-solid fa-robot"></i>
+                    <span>Agentes de IA</span>
+                </a>
+                <a href="/manager/fluxos.html" class="nav-item">
+                    <i class="fa-solid fa-diagram-project"></i>
+                    <span>Fluxos</span>
+                    <span class="nav-badge">Novo</span>
+                </a>
+                <a href="/manager/webhooks.html" class="nav-item">
+                    <i class="fa-solid fa-bolt"></i>
+                    <span>Webhooks</span>
+                </a>
+                <a href="/manager/configuracoes.html" class="nav-item">
+                    <i class="fa-solid fa-gear"></i>
+                    <span>Configurações</span>
+                </a>
+                <a href="/docs" target="_blank" class="nav-item">
+                    <i class="fa-solid fa-book"></i>
+                    <span>Documentação</span>
+                </a>
+            </nav>
+        </aside>
+        
+        <main class="main">
             
-            <!-- Dashboard Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex items-center justify-between">
-                    <div>
-                        <p class="text-sm font-medium text-gray-500 mb-1">Total de Instâncias</p>
-                        <h3 class="text-3xl font-bold text-gray-800" id="count-total">0</h3>
-                    </div>
-                    <div class="w-12 h-12 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center text-xl">
-                        <i class="fa-solid fa-list-ul"></i>
-                    </div>
+            <header class="top-header">
+                <button class="hamburger-btn" onclick="toggleSidebar()">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <h2 class="header-title">Instâncias</h2>
+                <div class="header-actions">
+                    <button onclick="openCreateModal()" class="btn btn-primary">
+                        <i class="fa-solid fa-plus"></i>
+                        <span class="hidden-sm">Nova Instância</span>
+                    </button>
                 </div>
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex items-center justify-between">
-                    <div>
-                        <p class="text-sm font-medium text-gray-500 mb-1">Conectadas</p>
-                        <h3 class="text-3xl font-bold text-emerald-600" id="count-open">0</h3>
+            </header>
+            
+            <div class="content">
+                <div class="content-wrapper">
+                    
+                    <div class="dashboard-grid">
+                        <div class="dashboard-card">
+                            <div>
+                                <div class="label-small">Total</div>
+                                <div class="value" id="count-total">0</div>
+                            </div>
+                            <div class="icon bg-blue-50 text-blue-500" style="background:#eff6ff;color:#3b82f6;">
+                                <i class="fa-solid fa-list-ul"></i>
+                            </div>
+                        </div>
+                        <div class="dashboard-card">
+                            <div>
+                                <div class="label-small">Conectadas</div>
+                                <div class="value" id="count-open" style="color:#059669;">0</div>
+                            </div>
+                            <div class="icon" style="background:#d1fae5;color:#10b981;">
+                                <i class="fa-solid fa-check"></i>
+                            </div>
+                        </div>
+                        <div class="dashboard-card">
+                            <div>
+                                <div class="label-small">Desconectadas</div>
+                                <div class="value" id="count-closed" style="color:#dc2626;">0</div>
+                            </div>
+                            <div class="icon" style="background:#fee2e2;color:#dc2626;">
+                                <i class="fa-solid fa-triangle-exclamation"></i>
+                            </div>
+                        </div>
                     </div>
-                    <div class="w-12 h-12 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center text-xl">
-                        <i class="fa-solid fa-check"></i>
+                    
+                    <div class="table-card">
+                        <div class="table-header">
+                            <div>NOME DA INSTÂNCIA</div>
+                            <div>STATUS</div>
+                            <div>NÚMERO CONECTADO</div>
+                            <div style="text-align:right;">AÇÕES</div>
+                        </div>
+                        <div id="instances-list">
+                            <div style="text-align:center; padding:48px 16px; color:#94a3b8;">
+                                <i class="fa-solid fa-spinner fa-spin" style="font-size:24px;"></i>
+                                <p style="margin-top:8px;">Carregando instâncias...</p>
+                            </div>
+                        </div>
                     </div>
-                </div>
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex items-center justify-between">
-                    <div>
-                        <p class="text-sm font-medium text-gray-500 mb-1">Desconectadas</p>
-                        <h3 class="text-3xl font-bold text-red-500" id="count-closed">0</h3>
-                    </div>
-                    <div class="w-12 h-12 rounded-full bg-red-50 text-red-500 flex items-center justify-center text-xl">
-                        <i class="fa-solid fa-triangle-exclamation"></i>
-                    </div>
+                    
                 </div>
             </div>
+        </main>
+    </div>
 
-            <!-- Tabela de Instâncias -->
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-gray-50/80 border-b border-gray-200 text-xs font-bold text-gray-500 tracking-wider uppercase">
-                            <th class="py-4 px-6">NOME DA INSTÂNCIA</th>
-                            <th class="py-4 px-6">STATUS</th>
-                            <th class="py-4 px-6">NÚMERO CONECTADO</th>
-                            <th class="py-4 px-6 text-right">AÇÕES</th>
-                        </tr>
-                    </thead>
-                    <tbody class="text-sm divide-y divide-gray-100" id="instances-list">
-                        <tr>
-                            <td colspan="4" class="text-center py-12 text-gray-400">
-                                <i class="fa-solid fa-spinner fa-spin text-2xl mb-2"></i><br>Carregando instâncias...
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+    <div id="qr-modal" class="modal-backdrop" style="display:none;">
+        <div class="modal-content" style="text-align:center;">
+            <button class="btn-close" onclick="closeQrModal()">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div style="width:64px; height:64px; background:#d1fae5; color:#10b981; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:28px; margin:0 auto 16px;">
+                <i class="fa-brands fa-whatsapp"></i>
+            </div>
+            <h3 style="font-size:20px; font-weight:700; margin:0 0 8px;">Conectar WhatsApp</h3>
+            <p style="font-size:14px; color:#64748b; margin:0 0 24px;">
+                Abra o WhatsApp, vá em <strong>Aparelhos Conectados</strong> e aponte para o código.
+            </p>
+            <div style="background:#f8fafc; width:100%; max-width:260px; aspect-ratio:1; margin:0 auto; border-radius:16px; display:flex; align-items:center; justify-content:center; border:2px dashed #e2e8f0;">
+                <img id="qr-image" src="" alt="QR Code" style="display:none; width:100%; height:100%; object-fit:contain; padding:12px;">
+                <div id="qr-loading" style="color:#10b981;">
+                    <i class="fa-solid fa-spinner fa-spin" style="font-size:32px;"></i>
+                    <p style="font-size:12px; margin-top:8px; font-weight:600;">Gerando QR...</p>
+                </div>
             </div>
         </div>
+    </div>
 
-        <!-- Modal QR Code -->
-        <div id="qr-modal" class="hidden absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 transition-all">
-            <div class="bg-white rounded-2xl p-8 max-w-sm w-full text-center relative shadow-2xl">
-                <button onclick="closeQrModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 rounded-full w-8 h-8 flex items-center justify-center transition-colors"><i class="fa-solid fa-xmark text-lg"></i></button>
-                <div class="w-16 h-16 bg-emerald-100 text-emerald-500 rounded-full flex items-center justify-center text-3xl mx-auto mb-4">
-                    <i class="fa-brands fa-whatsapp"></i>
-                </div>
-                <h3 class="text-xl font-bold mb-2 text-gray-800">Conectar WhatsApp</h3>
-                <p class="text-sm text-gray-500 mb-6 px-4">Abra o WhatsApp no seu celular, vá em Aparelhos Conectados e aponte para o código abaixo.</p>
-                <div class="bg-gray-50 w-64 h-64 mx-auto rounded-xl flex items-center justify-center mb-6 border-2 border-dashed border-gray-200">
-                    <img id="qr-image" src="" alt="QR Code" class="hidden w-full h-full object-contain p-3">
-                    <div id="qr-loading" class="text-primary flex flex-col items-center">
-                        <i class="fa-solid fa-spinner fa-spin text-4xl mb-2"></i>
-                        <span class="text-xs font-medium">Gerando QR...</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-    </main>
-
-    <script src="app.js"></script>
+    <script src="/manager/app.js"></script>
 </body>
 </html>

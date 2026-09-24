@@ -1,0 +1,47 @@
+{
+  "inicio": {
+    "title": "🎯 Menu Principal",
+    "text": "Olá! 👋 Sou a *Sofia* da AVS Infotec.\n\nComo posso te ajudar hoje?",
+    "footer": "AVS Infotec - Atendimento 24h",
+    "buttons": [
+      { "id": "ver_precos", "text": "💰 Ver preços", "next": "precos" },
+      { "id": "orcamento", "text": "📝 Solicitar orçamento", "next": "orcamento" },
+      { "id": "atendente", "text": "📞 Falar com atendente", "next": "atendente" }
+    ]
+  },
+  "precos": {
+    "title": "💰 Tabela de Preços",
+    "text": "*Tabela de Preços AVS Infotec*\n\n• Formatação Windows: R$ 80\n• Manutenção preventiva: R$ 120\n• Configuração de rede: R$ 150\n• Desenvolvimento web: a partir de R$ 800",
+    "footer": "AVS Infotec",
+    "buttons": [
+      { "id": "orcamento", "text": "📝 Fazer orçamento", "next": "orcamento" },
+      { "id": "atendente", "text": "📞 Falar com humano", "next": "atendente" },
+      { "id": "voltar", "text": "↩️ Voltar", "next": "inicio" }
+    ]
+  },
+  "orcamento": {
+    "title": "📝 Orçamento",
+    "text": "Para fazer um orçamento, me conta:\n\n• Qual serviço você precisa?\n• Qual o problema ou necessidade?\n• É urgente?",
+    "footer": "AVS Infotec",
+    "buttons": [
+      { "id": "atendente", "text": "📞 Falar com humano", "next": "atendente" },
+      { "id": "voltar", "text": "↩️ Voltar", "next": "inicio" }
+    ]
+  },
+  "atendente": {
+    "title": "📞 Atendimento Humano",
+    "text": "📞 Você será atendido por um humano!\n\nEntre em contato pelo WhatsApp:\nhttps://wa.me/5515998295029",
+    "footer": "AVS Infotec",
+    "buttons": [
+      { "id": "voltar", "text": "↩️ Voltar ao menu", "next": "inicio" }
+    ]
+  },
+  "horario": {
+    "title": "🕐 Horário",
+    "text": "*Horário de Atendimento*\n\nSegunda a Sexta: 8h às 18h\nSábado: 8h às 12h\nDomingo: Fechado",
+    "footer": "AVS Infotec",
+    "buttons": [
+      { "id": "voltar", "text": "↩️ Voltar", "next": "inicio" }
+    ]
+  }
+}

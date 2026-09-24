@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#10b981">
+    <title>Zapwarm API - Editor de Fluxos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="/manager/mobile.css">
+    <link rel="stylesheet" href="/manager/desktop-fix.css">
+    <style>
+        /* ============================================================
+           Layout específico do editor de fluxos
+           ============================================================ */
+        
+        /* Grid do editor: 1 coluna no mobile, 2 no desktop */
+        #flow-editor {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+        
+        @media (min-width: 1024px) {
+            #flow-editor {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 24px;
+            }
+        }
+        
+        /* Header do editor: responsivo */
+        .flow-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+        
+        @media (max-width: 767px) {
+            .flow-header-actions {
+                width: 100%;
+                margin-top: 8px;
+            }
+            
+            .flow-header-actions select,
+            .flow-header-actions button {
+                flex: 1;
+                min-width: 0;
+            }
+            
+            .top-header {
+                flex-wrap: wrap;
+                height: auto !important;
+                padding: 12px 16px !important;
+            }
+            
+            .top-header .header-title {
+                order: 1;
+            }
+            
+            .top-header .hamburger-btn {
+                order: 0;
+            }
+            
+            .top-header .flow-header-actions {
+                order: 2;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-layout">
+        <div class="sidebar-overlay" onclick="closeSidebar()"></div>
+        
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1><i class="fa-solid fa-fire"></i> Zapwarm <span class="badge-api">API</span></h1>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="/manager/index.html" class="nav-item"><i class="fa-solid fa-server"></i><span>Instâncias</span></a>
+                <a href="/manager/mensagens.html" class="nav-item"><i class="fa-solid fa-paper-plane"></i><span>Mensagens</span></a>
+                <a href="/manager/agentes.html" class="nav-item"><i class="fa-solid fa-robot"></i><span>Agentes de IA</span></a>
+                <a href="/manager/fluxos.html" class="nav-item active"><i class="fa-solid fa-diagram-project"></i><span>Fluxos</span><span class="nav-badge">Novo</span></a>
+                <a href="/manager/webhooks.html" class="nav-item"><i class="fa-solid fa-bolt"></i><span>Webhooks</span></a>
+                <a href="/manager/configuracoes.html" class="nav-item"><i class="fa-solid fa-gear"></i><span>Configurações</span></a>
+                <a href="/docs" target="_blank" class="nav-item"><i class="fa-solid fa-book"></i><span>Documentação</span></a>
+            </nav>
+        </aside>
+        
+        <main class="main">
+            <header class="top-header">
+                <button class="hamburger-btn" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
+                <h2 class="header-title">Editor de Fluxos</h2>
+                <div class="flow-header-actions">
+                    <select id="flow-select" class="input" style="min-height:42px;padding:8px 12px;font-size:13px;width:auto;min-width:140px;">
+                        <option value="">Carregando...</option>
+                    </select>
+                    <select id="instance-select" class="input" style="min-height:42px;padding:8px 12px;font-size:13px;width:auto;min-width:140px;">
+                        <option value="">Instância</option>
+                    </select>
+                    <button onclick="toggleFlow()" id="toggle-btn" class="btn btn-secondary" style="min-height:42px;padding:8px 16px;font-size:13px;">
+                        <i class="fa-solid fa-power-off"></i> <span id="toggle-label">Ativar</span>
+                    </button>
+                    <button onclick="salvarFluxo()" class="btn btn-primary" style="min-height:42px;padding:8px 16px;font-size:13px;">
+                        <i class="fa-solid fa-save"></i> Salvar
+                    </button>
+                </div>
+            </header>
+            
+            <div class="content">
+                <div class="content-wrapper">
+                    <div style="background:#eff6ff;border-left:4px solid #3b82f6;padding:16px;border-radius:12px;margin-bottom:24px;">
+                        <p style="margin:0;font-size:14px;color:#1e40af;">
+                            <strong>💡 Como usar:</strong> Cada "nó" é um menu de botões. Clique em <strong>+ Adicionar Nó</strong> para criar novos menus.
+                            Nos botões, use o campo <code style="background:#fff;padding:2px 6px;border-radius:4px;font-family:monospace;color:#10b981;">next</code> para indicar para qual nó ir quando o cliente clicar.
+                        </p>
+                    </div>
+
+                    <div id="flow-editor">
+                        <div style="text-align:center;padding:48px 16px;color:#94a3b8;grid-column:1/-1;">
+                            <i class="fa-solid fa-spinner fa-spin" style="font-size:24px;"></i>
+                            <p style="margin-top:8px;">Carregando fluxo...</p>
+                        </div>
+                    </div>
+
+                    <button onclick="adicionarNo()" style="margin-top:24px;width:100%;border:2px dashed #cbd5e1;background:transparent;color:#64748b;padding:20px;border-radius:16px;font-weight:700;cursor:pointer;transition:all 0.2s;font-size:15px;font-family:inherit;"
+                            onmouseover="this.style.borderColor='#10b981';this.style.background='#f0fdf4';this.style.color='#10b981';"
+                            onmouseout="this.style.borderColor='#cbd5e1';this.style.background='transparent';this.style.color='#64748b';">
+                        <i class="fa-solid fa-plus" style="margin-right:8px;"></i> Adicionar Nó
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="/manager/app.js"></script>
+    <script src="/manager/fluxos.js"></script>
+    
+    <script>
+    // Ajustar o botão de toggle para mostrar o label
+    const _originalAtualizarBotaoToggle = window.atualizarBotaoToggle;
+    window.atualizarBotaoToggle = function(ativado) {
+        const btn = document.getElementById('toggle-btn');
+        const label = document.getElementById('toggle-label');
+        if (ativado) {
+            btn.className = 'btn';
+            btn.style.cssText = 'background:#10b981;color:white;min-height:42px;padding:8px 16px;font-size:13px;';
+            if (label) label.textContent = 'Ativo';
+        } else {
+            btn.className = 'btn btn-secondary';
+            btn.style.cssText = 'min-height:42px;padding:8px 16px;font-size:13px;';
+            if (label) label.textContent = 'Ativar';
+        }
+    };
+    </script>
+</body>
+</html>

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#10b981">
+    <title>Zapwarm API - Configurações</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="/manager/mobile.css">
+    <link rel="stylesheet" href="/manager/desktop-fix.css">
+</head>
+<body>
+    <div class="app-layout">
+        <div class="sidebar-overlay" onclick="closeSidebar()"></div>
+        
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1><i class="fa-solid fa-fire"></i> Zapwarm <span class="badge-api">API</span></h1>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="/manager/index.html" class="nav-item"><i class="fa-solid fa-server"></i><span>Instâncias</span></a>
+                <a href="/manager/mensagens.html" class="nav-item"><i class="fa-solid fa-paper-plane"></i><span>Mensagens</span></a>
+                <a href="/manager/agentes.html" class="nav-item"><i class="fa-solid fa-robot"></i><span>Agentes de IA</span></a>
+                <a href="/manager/fluxos.html" class="nav-item"><i class="fa-solid fa-diagram-project"></i><span>Fluxos</span><span class="nav-badge">Novo</span></a>
+                <a href="/manager/webhooks.html" class="nav-item"><i class="fa-solid fa-bolt"></i><span>Webhooks</span></a>
+                <a href="/manager/configuracoes.html" class="nav-item active"><i class="fa-solid fa-gear"></i><span>Configurações</span></a>
+                <a href="/docs" target="_blank" class="nav-item"><i class="fa-solid fa-book"></i><span>Documentação</span></a>
+            </nav>
+        </aside>
+        
+        <main class="main">
+            <header class="top-header">
+                <button class="hamburger-btn" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
+                <h2 class="header-title">Configurações</h2>
+            </header>
+            
+            <div class="content">
+                <div class="content-wrapper" style="max-width:800px;margin:0 auto;">
+                    
+                    <div class="card" style="padding:24px;margin-bottom:20px;">
+                        <h3 style="font-size:17px;font-weight:700;margin:0 0 16px;color:#1e293b;">
+                            <i class="fa-solid fa-info-circle" style="color:#10b981;margin-right:8px;"></i>
+                            Status do Sistema
+                        </h3>
+                        <div id="status-sistema" style="font-size:14px;">
+                            <div style="color:#94a3b8;">Carregando...</div>
+                        </div>
+                    </div>
+                    
+                    <div class="card" style="padding:24px;margin-bottom:20px;">
+                        <h3 style="font-size:17px;font-weight:700;margin:0 0 16px;color:#1e293b;">
+                            <i class="fa-solid fa-book" style="color:#10b981;margin-right:8px;"></i>
+                            Documentação
+                        </h3>
+                        <a href="/docs" target="_blank" style="display:inline-flex;align-items:center;gap:8px;color:#10b981;font-weight:700;text-decoration:none;">
+                            Abrir documentação completa <i class="fa-solid fa-external-link-alt" style="font-size:12px;"></i>
+                        </a>
+                    </div>
+                    
+                    <div class="card" style="padding:24px;">
+                        <h3 style="font-size:17px;font-weight:700;margin:0 0 16px;color:#1e293b;">
+                            <i class="fa-solid fa-code" style="color:#10b981;margin-right:8px;"></i>
+                            Sobre o Sistema
+                        </h3>
+                        <div style="font-size:14px;color:#64748b;display:flex;flex-direction:column;gap:8px;">
+                            <div><strong style="color:#1e293b;">Versão:</strong> 1.0.0</div>
+                            <div><strong style="color:#1e293b;">Backend:</strong> Node.js 20 + Baileys 7</div>
+                            <div><strong style="color:#1e293b;">IA:</strong> Groq (openai/gpt-oss-120b)</div>
+                            <div><strong style="color:#1e293b;">Botões:</strong> @qadeerxtech/qadeer-btns</div>
+                            <div><strong style="color:#1e293b;">Frontend:</strong> Tailwind CSS + SweetAlert2</div>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="/manager/app.js"></script>
+    <script>
+    async function carregarStatus() {
+        const el = document.getElementById('status-sistema');
+        try {
+            const health = await apiFetch('/health');
+            const list = await apiFetch('/instance/list');
+            const total = (list.instances || []).length;
+            const conectadas = (list.instances || []).filter(i => i.connected).length;
+
+            el.innerHTML = `
+                <div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #f1f5f9;">
+                    <span style="color:#64748b;">API Status</span>
+                    <span style="font-weight:700;color:${health.status === 'ok' ? '#059669' : '#dc2626'};">
+                        ${health.status === 'ok' ? '✅ Online' : '❌ Offline'}
+                    </span>
+                </div>
+                <div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #f1f5f9;">
+                    <span style="color:#64748b;">Total de Instâncias</span>
+                    <span style="font-weight:700;color:#1e293b;">${total}</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #f1f5f9;">
+                    <span style="color:#64748b;">Instâncias Conectadas</span>
+                    <span style="font-weight:700;color:#059669;">${conectadas}</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;padding:12px 0;">
+                    <span style="color:#64748b;">Instâncias Desconectadas</span>
+                    <span style="font-weight:700;color:#dc2626;">${total - conectadas}</span>
+                </div>
+            `;
+        } catch (e) {
+            el.innerHTML = '<div style="color:#dc2626;">Erro: ' + e.message + '</div>';
+        }
+    }
+
+    carregarStatus();
+    setInterval(carregarStatus, 15000);
+    </script>
+</body>
+</html>

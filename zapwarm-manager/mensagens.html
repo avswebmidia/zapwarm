@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#10b981">
+    <title>Zapwarm API - Mensagens</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="/manager/mobile.css">
+    <link rel="stylesheet" href="/manager/desktop-fix.css">
+</head>
+<body>
+    <div class="app-layout">
+        <div class="sidebar-overlay" onclick="closeSidebar()"></div>
+        
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1><i class="fa-solid fa-fire"></i> Zapwarm <span class="badge-api">API</span></h1>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="/manager/index.html" class="nav-item"><i class="fa-solid fa-server"></i><span>Instâncias</span></a>
+                <a href="/manager/mensagens.html" class="nav-item active"><i class="fa-solid fa-paper-plane"></i><span>Mensagens</span></a>
+                <a href="/manager/agentes.html" class="nav-item"><i class="fa-solid fa-robot"></i><span>Agentes de IA</span></a>
+                <a href="/manager/fluxos.html" class="nav-item"><i class="fa-solid fa-diagram-project"></i><span>Fluxos</span><span class="nav-badge">Novo</span></a>
+                <a href="/manager/webhooks.html" class="nav-item"><i class="fa-solid fa-bolt"></i><span>Webhooks</span></a>
+                <a href="/manager/configuracoes.html" class="nav-item"><i class="fa-solid fa-gear"></i><span>Configurações</span></a>
+                <a href="/docs" target="_blank" class="nav-item"><i class="fa-solid fa-book"></i><span>Documentação</span></a>
+            </nav>
+        </aside>
+        
+        <main class="main">
+            <header class="top-header">
+                <button class="hamburger-btn" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
+                <h2 class="header-title">Enviar Mensagens</h2>
+            </header>
+            
+            <div class="content">
+                <div class="content-wrapper" style="max-width:720px;margin:0 auto;">
+                    
+                    <div class="card" style="padding:24px;">
+                        <h3 style="font-size:18px;font-weight:700;margin:0 0 20px;color:#1e293b;">
+                            <i class="fa-solid fa-paper-plane" style="color:#10b981;margin-right:8px;"></i>
+                            Nova Mensagem
+                        </h3>
+                        
+                        <div style="display:flex;flex-direction:column;gap:16px;">
+                            <div>
+                                <label class="label">INSTÂNCIA (REMETENTE)</label>
+                                <select id="msg-instance" class="input">
+                                    <option value="">Carregando instâncias...</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="label">NÚMERO DE DESTINO</label>
+                                <input type="text" id="msg-number" class="input" placeholder="Ex: 5515999999999">
+                            </div>
+                            
+                            <div>
+                                <label class="label">MENSAGEM</label>
+                                <textarea id="msg-text" class="input" rows="5" placeholder="Digite sua mensagem..."></textarea>
+                            </div>
+                            
+                            <button onclick="enviarMensagem()" class="btn btn-primary" style="width:100%;min-height:52px;font-size:15px;">
+                                <i class="fa-solid fa-paper-plane"></i> Enviar Mensagem
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top:20px;background:#eff6ff;border-left:4px solid #3b82f6;padding:16px;border-radius:12px;">
+                        <p style="margin:0;font-size:14px;color:#1e40af;">
+                            <strong>💡 Dica:</strong> Envie uma mensagem para <strong>seu próprio número</strong> para testar a conexão.
+                        </p>
+                    </div>
+                    
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="/manager/app.js"></script>
+    <script>
+    async function carregarInstanciasMensagens() {
+        try {
+            const res = await apiFetch('/instance/list');
+            const select = document.getElementById('msg-instance');
+            select.innerHTML = '';
+            if (!res.success || !res.instances || res.instances.length === 0) {
+                select.innerHTML = '<option value="">Nenhuma instância disponível</option>';
+                return;
+            }
+            const conectadas = res.instances.filter(i => i.connected || i.status === 'connected');
+            if (conectadas.length === 0) {
+                select.innerHTML = '<option value="">Nenhuma instância conectada</option>';
+                return;
+            }
+            conectadas.forEach(inst => {
+                const opt = document.createElement('option');
+                opt.value = inst.instance + '|' + inst.token;
+                opt.textContent = inst.instance + ' (' + (inst.phone || 'conectada') + ')';
+                select.appendChild(opt);
+            });
+        } catch (e) { console.error(e); }
+    }
+
+    async function enviarMensagem() {
+        const selectVal = document.getElementById('msg-instance').value;
+        const number = document.getElementById('msg-number').value.trim();
+        const text = document.getElementById('msg-text').value.trim();
+
+        if (!selectVal || !number || !text) {
+            Swal.fire('Atenção', 'Preencha todos os campos.', 'warning');
+            return;
+        }
+
+        const parts = selectVal.split('|');
+        const instance = parts[0];
+        const token = parts[1];
+
+        Swal.fire({ title: 'Enviando...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+        try {
+            const res = await apiFetch('/message/send-text', {
+                method: 'POST',
+                headers: { instance: instance, token: token },
+                body: JSON.stringify({ number, text })
+            });
+
+            if (res.success) {
+                Swal.fire('Enviado!', 'Mensagem enviada com sucesso.', 'success');
+                document.getElementById('msg-text').value = '';
+            } else {
+                Swal.fire('Erro', res.error || 'Falha ao enviar.', 'error');
+            }
+        } catch (e) {
+            Swal.fire('Erro', e.message, 'error');
+        }
+    }
+
+    carregarInstanciasMensagens();
+    setInterval(carregarInstanciasMensagens, 30000);
+    </script>
+</body>
+</html>
