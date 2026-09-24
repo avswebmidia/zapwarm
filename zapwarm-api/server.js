@@ -2563,6 +2563,7 @@ app.get('/instance/status', (req, res) => {
 app.get('/instance/list', (req, res) => {
   const list = Array.from(instances.values()).map((item) => ({
     instance: item.instance,
+    token: item.token,
     status: item.status,
     connected: item.status === 'connected',
     phone: item.phone,
