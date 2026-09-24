@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="bg-gray-50 text-gray-900">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zapwarm API - Pedidos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="/manager/mobile.css">
+    <link rel="stylesheet" href="/manager/desktop-fix.css">
+    <style>
+        .kpi-card { background:#fff; border-radius:14px; padding:16px; border:2px solid #f1f5f9; }
+        .kpi-value { font-size:24px; font-weight:800; color:#1e293b; }
+        .kpi-label { font-size:11px; color:#64748b; text-transform:uppercase; letter-spacing:0.5px; }
+        .pedido-row { background:#fff; border-radius:12px; padding:14px; margin-bottom:10px; border:2px solid #f1f5f9; transition:all .2s; }
+        .pedido-row:hover { border-color:#10b981; }
+        .status-badge { display:inline-flex; align-items:center; gap:4px; padding:3px 10px; border-radius:999px; font-size:11px; font-weight:700; }
+        .s-recebido { background:#dbeafe; color:#1e40af; }
+        .s-em_preparo { background:#fef3c7; color:#92400e; }
+        .s-saiu_entrega { background:#e0e7ff; color:#3730a3; }
+        .s-entregue { background:#d1fae5; color:#065f46; }
+        .s-cancelado { background:#fee2e2; color:#991b1b; }
+        .pg-pago { background:#d1fae5; color:#065f46; }
+        .pg-pendente { background:#fef3c7; color:#92400e; }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden font-sans antialiased">
+
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h1><i class="fa-solid fa-fire"></i> Zapwarm <span class="badge-api">API</span></h1>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="/manager/index.html" class="nav-item"><i class="fa-solid fa-server"></i><span>Instâncias</span></a>
+            <a href="/manager/mensagens.html" class="nav-item"><i class="fa-solid fa-paper-plane"></i><span>Mensagens</span></a>
+            <a href="/manager/disparo.html" class="nav-item"><i class="fa-solid fa-bullhorn"></i><span>Disparo</span></a>
+            <a href="/manager/agentes.html" class="nav-item"><i class="fa-solid fa-robot"></i><span>Agentes de IA</span></a>
+            <a href="/manager/fluxos.html" class="nav-item"><i class="fa-solid fa-diagram-project"></i><span>Fluxos</span></a>
+            <a href="/manager/pedidos.html" class="nav-item active"><i class="fa-solid fa-clipboard-list"></i><span>Pedidos</span></a>
+            <a href="/manager/pagamentos.html" class="nav-item"><i class="fa-solid fa-money-bill-wave"></i><span>Pagamentos</span></a>
+            <a href="/manager/webhooks.html" class="nav-item"><i class="fa-solid fa-bolt"></i><span>Webhooks</span></a>
+            <a href="/manager/configuracoes.html" class="nav-item"><i class="fa-solid fa-gear"></i><span>Configurações</span></a>
+            <a href="/docs" target="_blank" class="nav-item"><i class="fa-solid fa-book"></i><span>Documentação</span></a>
+        </nav>
+    </aside>
+
+    <main class="main">
+        <header class="top-header">
+            <button class="hamburger-btn" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
+            <h2 class="header-title">📋 Pedidos</h2>
+            <div class="header-actions">
+                <button onclick="carregarPedidos()" class="btn btn-secondary" style="min-height:42px;padding:10px 14px;" title="Recarregar">
+                    <i class="fa-solid fa-rotate"></i>
+                </button>
+                <button onclick="novoPedido()" class="btn btn-primary" style="min-height:42px;padding:10px 16px;">
+                    <i class="fa-solid fa-plus"></i> <span class="hidden-sm">Novo Pedido</span>
+                </button>
+                <button onclick="logout()" class="btn btn-secondary" style="min-height:42px;padding:10px 14px;" title="Sair">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                </button>
+            </div>
+        </header>
+
+        <div class="content">
+            <div class="content-wrapper" style="max-width:1200px;margin:0 auto;">
+
+                <!-- ABAS -->
+                <div style="display:flex;gap:8px;margin-bottom:20px;border-bottom:2px solid #f1f5f9;flex-wrap:wrap;">
+                    <button id="tab-pedidos" onclick="mudarAba('pedidos')" class="btn" style="background:transparent;border:none;border-bottom:3px solid #10b981;color:#10b981;font-weight:700;padding:10px 20px;cursor:pointer;font-size:15px;">
+                        📋 Pedidos
+                    </button>
+                    <button id="tab-cardapio" onclick="mudarAba('cardapio')" class="btn" style="background:transparent;border:none;border-bottom:3px solid transparent;color:#94a3b8;font-weight:700;padding:10px 20px;cursor:pointer;font-size:15px;">
+                        🍕 Catálogo
+                    </button>
+                    <button id="tab-pagamento" onclick="mudarAba('pagamento')" class="btn" style="background:transparent;border:none;border-bottom:3px solid transparent;color:#94a3b8;font-weight:700;padding:10px 20px;cursor:pointer;font-size:15px;">
+                        💳 Pagamento
+                    </button>
+                </div>
+
+                <!-- CONTEÚDO: PEDIDOS -->
+                <div id="conteudo-pedidos">
+
+                <!-- KPIs -->
+                <div id="kpis" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:24px;">
+                    <div class="kpi-card"><div class="kpi-label">Hoje</div><div class="kpi-value" id="kpi-hoje">-</div></div>
+                    <div class="kpi-card"><div class="kpi-label">Pendentes</div><div class="kpi-value" id="kpi-pendentes">-</div></div>
+                    <div class="kpi-card"><div class="kpi-label">Em entrega</div><div class="kpi-value" id="kpi-entrega">-</div></div>
+                    <div class="kpi-card"><div class="kpi-label">Entregues</div><div class="kpi-value" id="kpi-entregues">-</div></div>
+                    <div class="kpi-card"><div class="kpi-label">Faturamento hoje</div><div class="kpi-value" id="kpi-fat" style="font-size:18px;">-</div></div>
+                </div>
+
+                <!-- Filtros -->
+                <div style="background:#fff;border-radius:14px;padding:14px;margin-bottom:20px;border:2px solid #f1f5f9;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+                    <input id="filtro-busca" type="text" placeholder="Buscar por ID, cliente ou telefone..." oninput="aplicarFiltros()"
+                           style="flex:1;min-width:200px;padding:10px 14px;border:1px solid #e2e8f0;border-radius:10px;font-size:14px;">
+                    <select id="filtro-status" onchange="aplicarFiltros()" style="padding:10px 14px;border:1px solid #e2e8f0;border-radius:10px;font-size:14px;">
+                        <option value="">Todos os status</option>
+                        <option value="recebido">Recebido</option>
+                        <option value="em_preparo">Em preparo</option>
+                        <option value="saiu_entrega">Saiu para entrega</option>
+                        <option value="entregue">Entregue</option>
+                        <option value="cancelado">Cancelado</option>
+                    </select>
+                    <select id="filtro-pg" onchange="aplicarFiltros()" style="padding:10px 14px;border:1px solid #e2e8f0;border-radius:10px;font-size:14px;">
+                        <option value="">Todos os pagamentos</option>
+                        <option value="pago">Pago</option>
+                        <option value="pendente">Pendente</option>
+                    </select>
+                </div>
+
+                <!-- Lista -->
+                <div id="pedidos-list">
+                    <div style="text-align:center;padding:40px;color:#94a3b8;">
+                        <i class="fa-solid fa-spinner fa-spin text-2xl"></i>
+                        <p style="margin-top:8px;">Carregando pedidos...</p>
+                    </div>
+                </div>
+
+                </div><!-- /conteudo-pedidos -->
+
+                <!-- CONTEÚDO: CARDÁPIO -->
+                <div id="conteudo-cardapio" style="display:none;">
+                    <div style="background:#fff;border-radius:14px;padding:20px;border:2px solid #f1f5f9;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+                            <h3 style="font-size:18px;font-weight:700;margin:0;color:#1e293b;">🍕 Catálogo</h3>
+                            <div style="display:flex;gap:8px;">
+                                <button onclick="adicionarCategoria()" class="btn btn-secondary" style="min-height:40px;padding:8px 14px;">
+                                    <i class="fa-solid fa-folder-plus"></i> Nova Categoria
+                                </button>
+                                <button onclick="salvarCardapio()" class="btn btn-primary" style="min-height:40px;padding:8px 16px;">
+                                    <i class="fa-solid fa-floppy-disk"></i> Salvar
+                                </button>
+                            </div>
+                        </div>
+                        <p style="margin:0 0 16px;font-size:13px;color:#64748b;">
+                            💡 Os produtos aqui aparecem no WhatsApp. O campo <strong>next</strong> indica o próximo nó do fluxo (ex: <code>tam_calabresa</code>).
+                        </p>
+                        <div id="cardapio-lista">
+                            <div style="text-align:center;padding:40px;color:#94a3b8;">
+                                <i class="fa-solid fa-spinner fa-spin text-2xl"></i>
+                                <p>Carregando catálogo...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CONTEÚDO: PAGAMENTO -->
+                <div id="conteudo-pagamento" style="display:none;">
+                    <div style="background:#fff;border-radius:14px;padding:20px;border:2px solid #f1f5f9;">
+                        <h3 style="font-size:18px;font-weight:700;margin:0 0 8px;color:#1e293b;">
+                            <i class="fa-solid fa-credit-card" style="color:#10b981;"></i> Formas de Pagamento
+                        </h3>
+                        <p style="margin:0 0 16px;font-size:13px;color:#64748b;">
+                            Escolha quais formas o bot vai oferecer ao cliente na hora de fechar o pedido.
+                        </p>
+                        <div id="pagto-config" style="display:flex;flex-direction:column;gap:10px;">
+                            <label style="display:flex;align-items:center;gap:10px;padding:12px;border:1px solid #e2e8f0;border-radius:10px;cursor:pointer;">
+                                <input type="checkbox" id="pagto-pix" style="width:18px;height:18px;accent-color:#10b981;">
+                                <div><strong style="font-size:14px;">💰 PIX</strong><div style="font-size:12px;color:#94a3b8;">Pagamento instantâneo</div></div>
+                            </label>
+                            <label style="display:flex;align-items:center;gap:10px;padding:12px;border:1px solid #e2e8f0;border-radius:10px;cursor:pointer;">
+                                <input type="checkbox" id="pagto-dinheiro" style="width:18px;height:18px;accent-color:#10b981;">
+                                <div><strong style="font-size:14px;">💵 Dinheiro</strong><div style="font-size:12px;color:#94a3b8;">Pague na entrega</div></div>
+                            </label>
+                            <label style="display:flex;align-items:center;gap:10px;padding:12px;border:1px solid #e2e8f0;border-radius:10px;cursor:pointer;">
+                                <input type="checkbox" id="pagto-cartao_entrega" style="width:18px;height:18px;accent-color:#10b981;">
+                                <div><strong style="font-size:14px;">💳 Cartão (na entrega)</strong><div style="font-size:12px;color:#94a3b8;">Maquininha</div></div>
+                            </label>
+                            <label style="display:flex;align-items:center;gap:10px;padding:12px;border:1px solid #e2e8f0;border-radius:10px;cursor:pointer;">
+                                <input type="checkbox" id="pagto-cartao_online" style="width:18px;height:18px;accent-color:#10b981;">
+                                <div><strong style="font-size:14px;">💳 Cartão (online)</strong><div style="font-size:12px;color:#94a3b8;">Link de pagamento</div></div>
+                            </label>
+                        </div>
+                        <button onclick="salvarFormasPagamento()" class="btn btn-primary" style="margin-top:16px;min-height:42px;padding:10px 20px;">
+                            <i class="fa-solid fa-floppy-disk"></i> Salvar Formas de Pagamento
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <script src="/manager/app.js"></script>
+    <script src="/manager/pedidos.js"></script>
+    <script src="/manager/cardapio.js"></script>
+    <script src="/manager/pagamento-config.js"></script>
+</body>
+</html>

@@ -380,35 +380,6 @@ function clearEscolhasFluxo(remoteJid) {
 // ============================================================
 // CARRINHO ACUMULATIVO (carrinho de compras no fluxo)
 // ============================================================
-// ============================================================
-// EXTRAIR TELEFONE REAL DO JID (resolve @lid)
-// ============================================================
-async function extrairTelefoneReal(sock, remoteJid) {
-  // Se já é @s.whatsapp.net, extrai direto
-  if (remoteJid.endsWith('@s.whatsapp.net')) {
-    return remoteJid.replace(/@.*$/, '');
-  }
-  
-  // Se é @lid, tenta resolver via onWhatsApp
-  if (remoteJid.endsWith('@lid') && sock) {
-    try {
-      // Tenta pegar do store
-      const jid = remoteJid;
-      
-      // Tenta buscar o número real
-      const [result] = await sock.onWhatsApp(jid);
-      if (result && result.jid && result.jid.endsWith('@s.whatsapp.net')) {
-        return result.jid.replace(/@.*$/, '');
-      }
-    } catch (e) {
-      console.warn('Erro ao resolver @lid:', e.message);
-    }
-  }
-  
-  // Fallback: retorna o que tem (pode ser lid)
-  return remoteJid.replace(/@.*$/, '');
-}
-
 function getCarrinho(remoteJid) {
   if (!global._carrinho) global._carrinho = new Map();
   return global._carrinho.get(remoteJid) || { itens: [], subtotal: 0 };
@@ -900,12 +871,6 @@ sock.ev.on('messages.upsert', async (m) => {
               setEscolhaFluxo(remoteJid, esc.chave, esc.valor);
             }
 
-            // ✅ Se o nó é "fim", encerra a conversa
-            if (proximoNo === 'fim') {
-              setFluxoEstado(remoteJid, fluxoCfg.flow, 'fim');
-              console.log(`🏁 [${name}] Fluxo FINALIZADO para ${remoteJid}`);
-            }
-
             // ✅ 5. Se ainda não tem próximo, buscar no CATÁLOGO dinâmico
             if (!proximoNo) {
               try {
@@ -935,9 +900,6 @@ sock.ev.on('messages.upsert', async (m) => {
               }
             }
 
-            // 🔍 DEBUG: estado atual antes do fallback
-            console.log(`🔍 [NEXT] buttonId="${buttonId}" estado="${estado ? estado.node : 'null'}" noAtual="${noAtual ? 'ok' : 'null'}" proximoNo="${proximoNo}"`);
-
             // ✅ 8. Fallback: varrer todos os nós
             if (!proximoNo) {
               for (const [nodeName, node] of Object.entries(flow)) {
@@ -954,8 +916,6 @@ sock.ev.on('messages.upsert', async (m) => {
                 }
               }
             }
-
-            console.log(`🔍 [NEXT] proximoNo final="${proximoNo}"`);
           }
 
           if (proximoNo && flow[proximoNo]) {
@@ -1135,25 +1095,6 @@ sock.ev.on('messages.upsert', async (m) => {
             // ============================================================
             // LISTA DINÂMICA (lê do cardapio.json) — PRIORIDADE
             // ============================================================
-            // ============================================================
-            // ENVIO DE IMAGEM (se o nó tem image)
-            // ============================================================
-            if (no.image) {
-              try {
-                const caption = no.imageCaption || no.text || '';
-                console.log(`🖼️ [${name}] Enviando imagem do nó "${proximoNo}"`);
-                await sock.sendMessage(remoteJid, {
-                  image: { url: no.image },
-                  caption: caption
-                });
-                await new Promise(r => setTimeout(r, 800));
-              } catch (e) {
-                console.error(`❌ [${name}] Erro ao enviar imagem:`, e.message);
-                // Fallback: envia só o texto
-                await sock.sendMessage(remoteJid, { text: no.text || '' });
-              }
-            }
-
             if (no.listFromCatalogo) {
               try {
                 const card = loadCardapio();
@@ -1286,62 +1227,6 @@ sock.ev.on('messages.upsert', async (m) => {
               await sock.sendMessage(remoteJid, { text: no.text || '' });
             }
           }
-      // ============================================================
-      // REGISTRAR RELATO (quando o cliente está no nó "suporte")
-      // ============================================================
-      const estadoAtualSuporte = getFluxoEstado(remoteJid);
-      if (estadoAtualSuporte && estadoAtualSuporte.node === 'suporte' && !isButtonClick && textMessage.trim().length > 5) {
-        // Cliente escreveu um relato
-        console.log(`📝 [${name}] Relato recebido: "${textMessage.substring(0, 80)}"`);
-        
-        // Salva o relato em arquivo
-        try {
-          const RELATOS_FILE = path.join(__dirname, 'relatos.json');
-          let relatos = { relatos: [] };
-          try {
-            if (fs.existsSync(RELATOS_FILE)) {
-              relatos = JSON.parse(fs.readFileSync(RELATOS_FILE, 'utf8'));
-            }
-          } catch(e) {}
-          
-          const telefone = await extrairTelefoneReal(sock, remoteJid);
-          relatos.relatos.push({
-            id: 'REL-' + Date.now(),
-            instance: name,
-            cliente: {
-              telefone: telefone,
-              remoteJid: remoteJid,
-              lid: remoteJid.endsWith('@lid') ? remoteJid : null,
-              nome: msg.pushName || 'Cliente'
-            },
-            mensagem: textMessage,
-            data: new Date().toISOString()
-          });
-          
-          fs.writeFileSync(RELATOS_FILE, JSON.stringify(relatos, null, 2));
-          console.log(`✅ Relato salvo: ${telefone}`);
-        } catch(e) {
-          console.error('Erro ao salvar relato:', e.message);
-        }
-        
-        // Responde agradecendo
-        try {
-          await sock.sendMessage(remoteJid, {
-            text: '🙏 *Obrigado pelo seu relato!*\n\n' +
-                  'Sua mensagem foi *registrada com sucesso* e nossa equipe vai analisar.\n\n' +
-                  'Em breve entraremos em contato.\n\n' +
-                  'Deus abençoe! 💚'
-          });
-          console.log(`✅ Agradecimento enviado para ${remoteJid}`);
-        } catch (e) {
-          console.error('Erro ao enviar agradecimento:', e.message);
-        }
-        
-        // Atualiza o estado pra "finalizado" (não volta pro suporte)
-        setFluxoEstado(remoteJid, fluxoCfg.flow || 'jefferson', 'fim');
-        continue;
-      }
-
           continue; // Fluxo tratou, não passa para o bot IA
         }
       }
@@ -3703,8 +3588,8 @@ async function processarDisparo(jobId) {
     const telefone = job.numeros[i];
     const jid = telefone + '@s.whatsapp.net';
 
-    // ✅ Verifica opt-in (a menos que seja "primeiro_contato")
-    if (!job.primeiroContato && !temOptin(telefone)) {
+    // ✅ Verifica opt-in
+    if (!temOptin(telefone)) {
       job.erros++;
       job.log.push({ telefone, status: 'sem_optin', em: new Date().toISOString() });
       console.log(`⏭️  ${telefone} — sem opt-in, pulado`);
@@ -4656,38 +4541,6 @@ app.get('/bot/memoria-stats', (req, res) => {
 // ============================================================
 
 // Estatísticas
-// ============================================================
-// RELATOS DE SUPORTE
-// ============================================================
-app.get('/relatos', (req, res) => {
-  try {
-    const RELATOS_FILE = path.join(__dirname, 'relatos.json');
-    if (!fs.existsSync(RELATOS_FILE)) {
-      return res.json({ success: true, total: 0, relatos: [] });
-    }
-    const d = JSON.parse(fs.readFileSync(RELATOS_FILE, 'utf8'));
-    const lista = (d.relatos || []).sort((a, b) => new Date(b.data) - new Date(a.data));
-    res.json({ success: true, total: lista.length, relatos: lista });
-  } catch (e) {
-    res.status(500).json({ success: false, error: e.message });
-  }
-});
-
-app.delete('/relatos/:id', (req, res) => {
-  try {
-    const RELATOS_FILE = path.join(__dirname, 'relatos.json');
-    if (!fs.existsSync(RELATOS_FILE)) {
-      return res.json({ success: true });
-    }
-    const d = JSON.parse(fs.readFileSync(RELATOS_FILE, 'utf8'));
-    d.relatos = (d.relatos || []).filter(r => r.id !== req.params.id);
-    fs.writeFileSync(RELATOS_FILE, JSON.stringify(d, null, 2));
-    res.json({ success: true });
-  } catch (e) {
-    res.status(500).json({ success: false, error: e.message });
-  }
-});
-
 app.get('/disparo/stats', (req, res) => {
   try {
     const inp = loadOptin();
@@ -4739,7 +4592,6 @@ app.post('/disparo/start', async (req, res) => {
     const job = {
       id: jobId,
       instance,
-      primeiroContato: req.body.primeiroContato || false,
       modo: modo || 'texto',
       numeros: numerosLimpos,
       total: numerosLimpos.length,

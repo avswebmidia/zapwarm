@@ -37,3 +37,34 @@ bot-configs.json
 groq-keys.json
 .env
 zapwarm-api/.env
+# Sessões WhatsApp (NUNCA versionar)
+zapwarm-api/sessions/
+zapwarm-api/uploads/
+zapwarm-api/node_modules/
+
+# Configs com dados sensíveis
+zapwarm-api/.env
+zapwarm-api/optin.json
+zapwarm-api/optout.json
+zapwarm-api/relatos.json
+zapwarm-api/lid-map.json
+zapwarm-api/pedidos.json
+zapwarm-api/agentes.json
+zapwarm-api/bot-configs.json
+zapwarm-api/pagamento-configs.json
+zapwarm-api/groq-keys.json
+zapwarm-api/groq-global.json
+zapwarm-api/fluxo-configs.json
+
+# Backups
+*.bak
+*.bak.*
+*.bak-*
+
+# Logs
+*.log
+logs/
+
+# Sistema
+.DS_Store
+Thumbs.db

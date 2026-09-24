@@ -22,77 +22,15 @@
     ]
   },
   "cardapio": {
-    "title": "🍕 Cardápio",
-    "text": "Escolha sua pizza no menu abaixo:",
+    "title": "🍕 Catálogo",
+    "text": "Escolha o que deseja adicionar ao carrinho:",
     "footer": "Pizzaria Delivery",
-    "list": {
-      "buttonText": "Ver Cardápio 📂",
-      "sections": [
-        {
-          "title": "🍕 Pizzas Salgadas",
-          "rows": [
-            {
-              "id": "pizza_calabresa",
-              "title": "Calabresa",
-              "description": "R$ 60 (Grande)",
-              "next": "tam_calabresa"
-            },
-            {
-              "id": "pizza_margherita",
-              "title": "Margherita",
-              "description": "R$ 55 (Grande)",
-              "next": "tam_margherita"
-            },
-            {
-              "id": "pizza_portuguesa",
-              "title": "Portuguesa",
-              "description": "R$ 65 (Grande)",
-              "next": "tam_portuguesa"
-            },
-            {
-              "id": "pizza_quatro_queijos",
-              "title": "Quatro Queijos",
-              "description": "R$ 70 (Grande)",
-              "next": "tam_quatro_queijos"
-            },
-            {
-              "id": "pizza_frango_catupiry",
-              "title": "Frango c/ Catupiry",
-              "description": "R$ 65 (Grande)",
-              "next": "tam_frango_catupiry"
-            }
-          ]
-        },
-        {
-          "title": "🥤 Bebidas",
-          "rows": [
-            {
-              "id": "bebida_coca_2l",
-              "title": "Coca-Cola 2L",
-              "description": "R$ 12",
-              "next": "bebida_coca"
-            },
-            {
-              "id": "bebida_guarana_2l",
-              "title": "Guaraná 2L",
-              "description": "R$ 10",
-              "next": "bebida_guarana"
-            }
-          ]
-        }
-      ]
-    },
-    "buttons": [
-      {
-        "id": "novo_botao",
-        "text": "Pizza Mozarela ",
-        "next": "cardapio"
-      }
-    ]
+    "listFromCatalogo": true,
+    "listButtonText": "Ver Catálogo 📂"
   },
   "tam_calabresa": {
-    "title": "📏 Tamanho — Calabresa",
-    "text": "Escolha o tamanho da sua pizza:",
+    "title": "📏 Tamanho",
+    "text": "Escolha o tamanho da *Calabresa*:",
     "footer": "Pizzaria Delivery",
     "buttons": [
       {
@@ -120,43 +58,112 @@
       {
         "id": "sem_borda",
         "text": "Sem borda",
-        "next": "bebida_calabresa"
+        "next": "add_calabresa"
       },
       {
         "id": "borda_catupiry",
         "text": "Catupiry (+R$8)",
-        "next": "bebida_calabresa"
+        "next": "add_calabresa"
       },
       {
         "id": "borda_cheddar",
         "text": "Cheddar (+R$8)",
-        "next": "bebida_calabresa"
+        "next": "add_calabresa"
       }
     ]
   },
-  "bebida_calabresa": {
-    "title": "🥤 Bebida",
-    "text": "Quer adicionar uma bebida?",
+  "add_calabresa": {
+    "title": "✅ Adicionado!",
+    "text": "Pizza adicionada ao carrinho.",
+    "footer": "Pizzaria Delivery",
+    "dynamic": "adicionar_item",
+    "buttons": [
+      {
+        "id": "adicionar_mais",
+        "text": "➕ Adicionar mais",
+        "next": "cardapio"
+      },
+      {
+        "id": "fechar_pedido",
+        "text": "✅ Fechar pedido",
+        "next": "bairro_entrega"
+      },
+      {
+        "id": "limpar_carrinho",
+        "text": "🗑️ Limpar",
+        "next": "inicio"
+      }
+    ]
+  },
+  "var_coca": {
+    "title": "🥤 Coca-Cola",
+    "text": "Escolha o tamanho:",
     "footer": "Pizzaria Delivery",
     "buttons": [
       {
-        "id": "sem_bebida",
-        "text": "Sem bebida",
-        "next": "bairro_calabresa"
+        "id": "coca_600ml",
+        "text": "600ml (R$ 8)",
+        "next": "add_coca"
       },
       {
-        "id": "bebida_coca_2l",
-        "text": "Coca 2L (+R$12)",
-        "next": "bairro_calabresa"
+        "id": "coca_2l",
+        "text": "2L (R$ 12)",
+        "next": "add_coca"
       },
       {
-        "id": "bebida_guarana_2l",
-        "text": "Guaraná 2L (+R$10)",
-        "next": "bairro_calabresa"
+        "id": "coca_lata",
+        "text": "Lata 350ml (R$ 6)",
+        "next": "add_coca"
       }
     ]
   },
-  "bairro_calabresa": {
+  "add_coca": {
+    "title": "✅ Adicionado!",
+    "text": "Bebida adicionada ao carrinho.",
+    "footer": "Pizzaria Delivery",
+    "dynamic": "adicionar_item",
+    "buttons": [
+      {
+        "id": "adicionar_mais",
+        "text": "➕ Adicionar mais",
+        "next": "cardapio"
+      },
+      {
+        "id": "fechar_pedido",
+        "text": "✅ Fechar pedido",
+        "next": "bairro_entrega"
+      },
+      {
+        "id": "limpar_carrinho",
+        "text": "🗑️ Limpar",
+        "next": "inicio"
+      }
+    ]
+  },
+  "add_pudim": {
+    "title": "✅ Adicionado!",
+    "text": "Pudim adicionado ao carrinho.",
+    "footer": "Pizzaria Delivery",
+    "dynamic": "adicionar_item",
+    "buttons": [
+      {
+        "id": "adicionar_mais",
+        "text": "➕ Adicionar mais",
+        "next": "cardapio"
+      },
+      {
+        "id": "fechar_pedido",
+        "text": "✅ Fechar pedido",
+        "next": "bairro_entrega"
+      },
+      {
+        "id": "limpar_carrinho",
+        "text": "🗑️ Limpar",
+        "next": "inicio"
+      }
+    ]
+  },
+  "bairro_entrega": {
     "title": "📍 Endereço de entrega",
     "text": "Escolha seu bairro:",
     "footer": "Pizzaria Delivery",
@@ -164,31 +171,31 @@
       "buttonText": "Escolher Bairro 📍",
       "sections": [
         {
-          "title": "📍 Bairros",
+          "title": "📍 Bairros atendidos",
           "rows": [
             {
               "id": "bairro_centro",
               "title": "Centro",
               "description": "Taxa R$ 5",
-              "next": "confirmar_calabresa"
+              "next": "escolher_pagamento"
             },
             {
               "id": "bairro_jardim_america",
               "title": "Jardim América",
               "description": "Taxa R$ 8",
-              "next": "confirmar_calabresa"
+              "next": "escolher_pagamento"
             },
             {
               "id": "bairro_zona_sul",
               "title": "Zona Sul",
               "description": "Taxa R$ 10",
-              "next": "confirmar_calabresa"
+              "next": "escolher_pagamento"
             },
             {
               "id": "bairro_vila_nova",
               "title": "Vila Nova",
               "description": "Taxa R$ 12",
-              "next": "confirmar_calabresa"
+              "next": "escolher_pagamento"
             },
             {
               "id": "bairro_outro",
@@ -203,17 +210,17 @@
   },
   "endereco_livre": {
     "title": "📍 Endereço",
-    "text": "Digite seu endereço completo (rua, número, complemento):\n\n_(ou clique em Cancelar)_",
+    "text": "Digite seu endereço completo (rua, número, complemento):",
     "footer": "Pizzaria Delivery",
     "buttons": [
       {
-        "id": "cancelar",
-        "text": "❌ Cancelar",
-        "next": "inicio"
+        "id": "voltar",
+        "text": "↩️ Voltar",
+        "next": "bairro_entrega"
       }
     ]
   },
-  "confirmar_calabresa": {
+  "confirmar_pedido": {
     "title": "✅ Confirmar Pedido",
     "text": "Revise seu pedido e clique em *Confirmar*.\n\nVou gerar o PIX com o valor total.",
     "footer": "Pizzaria Delivery",
@@ -222,7 +229,7 @@
       {
         "id": "confirmar",
         "text": "✅ Confirmar",
-        "next": "confirmar_calabresa"
+        "next": "confirmar_pedido"
       }
     ]
   },
@@ -240,13 +247,26 @@
   },
   "atendente": {
     "title": "📞 Atendente",
-    "text": "Claro! Um de nossos atendentes vai te ajudar em instantes.\n\nWhatsApp: https://wa.me/5515998295029",
+    "text": "Claro! Um de nossos atendentes vai te ajudar.\n\nWhatsApp: https://wa.me/5515998295029",
     "footer": "Pizzaria Delivery",
     "buttons": [
       {
         "id": "voltar",
         "text": "↩️ Voltar",
         "next": "inicio"
+      }
+    ]
+  },
+  "escolher_pagamento": {
+    "title": "💳 Pagamento",
+    "text": "Escolha a forma de pagamento:",
+    "footer": "Pizzaria Delivery",
+    "dynamic": "escolher_pagamento",
+    "buttons": [
+      {
+        "id": "confirmar",
+        "text": "✅ Ver formas",
+        "next": "escolher_pagamento"
       }
     ]
   }

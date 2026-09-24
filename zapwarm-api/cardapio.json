@@ -1,0 +1,37 @@
+{
+  "categorias": [
+    {
+      "id": "pizzas_salgadas",
+      "titulo": "🍕 Pizzas Salgadas",
+      "itens": [
+        {
+          "id": "pizza_calabresa",
+          "titulo": "Calabresa",
+          "descricao": "R$ 60 (Grande)",
+          "valor": 60,
+          "next": "tam_calabresa"
+        },
+        {
+          "id": "pizza_margherita",
+          "titulo": "Margherita",
+          "descricao": "R$ 55 (Grande)",
+          "valor": 55,
+          "next": "tam_margherita"
+        }
+      ]
+    },
+    {
+      "id": "bebidas",
+      "titulo": "🥤 Bebidas",
+      "itens": [
+        {
+          "id": "bebida_coca",
+          "titulo": "Coca-Cola",
+          "descricao": "A partir de R$ 8",
+          "valor": 0,
+          "next": "var_coca"
+        }
+      ]
+    }
+  ]
+}

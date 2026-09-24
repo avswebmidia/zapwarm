@@ -1,0 +1,201 @@
+{
+  "inicio": {
+    "title": "🙏 Autorização",
+    "text": "Aqui é o Pr. Jefferson e a Pra. Suélei. Tudo bem com você?\n\nAntes de continuar, você autoriza receber nossas mensagens?",
+    "footer": "Caminhada e atuação pública",
+    "list": {
+      "buttonText": "Responder 🙏",
+      "sections": [
+        {
+          "title": "Autorização",
+          "rows": [
+            {
+              "id": "autorizo",
+              "title": "✅ Sim, autorizo",
+              "description": "Receber mensagens",
+              "next": "conexao"
+            },
+            {
+              "id": "nao_autorizo",
+              "title": "❌ Não autorizo",
+              "description": "Não quero receber",
+              "next": "despedida"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "conexao": {
+    "title": "2️⃣ Conexão",
+    "text": "Estamos compartilhando informações sobre nossa caminhada e atuação pública.\n\nQuer acompanhar e participar conosco?",
+    "footer": "Pr. Jefferson e Pra. Suélei",
+    "buttons": [
+      {
+        "id": "sim_participar",
+        "text": "🙏 Sim, quero participar",
+        "next": "como_participar"
+      },
+      {
+        "id": "apenas_acompanhar",
+        "text": "📲 Quero apenas acompanhar",
+        "next": "acompanhar"
+      },
+      {
+        "id": "nao_receber",
+        "text": "❌ Prefiro não receber",
+        "next": "despedida"
+      }
+    ]
+  },
+  "como_participar": {
+    "title": "3️⃣ Como participar",
+    "text": "Que bom contar com você! 🙏\n\nTemos duas formas de participação:\n\n👥 *Multiplicador* — compartilhar informações com pelo menos 10 pessoas.\n\n📲 *Divulgador Digital* — compartilhar os materiais oficiais em suas redes e Status.\n\nQual você prefere?",
+    "footer": "Pr. Jefferson e Pra. Suélei",
+    "buttons": [
+      {
+        "id": "multiplicador",
+        "text": "👥 Quero ser Multiplicador",
+        "next": "msg_multiplicador"
+      },
+      {
+        "id": "divulgador",
+        "text": "📲 Quero ser Divulgador Digital",
+        "next": "msg_divulgador"
+      }
+    ]
+  },
+  "msg_multiplicador": {
+    "title": "👥 Multiplicador",
+    "text": "Perfeito! 👥🙏\n\nVocê será nosso *Multiplicador*.\n\nVamos enviar materiais oficiais para você compartilhar com pelo menos 10 pessoas do seu círculo.",
+    "footer": "Pr. Jefferson e Pra. Suélei",
+    "buttons": [
+      {
+        "id": "pode_enviar_mult",
+        "text": "🙌 Pode enviar",
+        "next": "envio_material"
+      }
+    ]
+  },
+  "msg_divulgador": {
+    "title": "📲 Divulgador Digital",
+    "text": "Perfeito! 📲🙏\n\nVocê será nosso *Divulgador Digital*.\n\nVamos enviar materiais oficiais para você compartilhar no WhatsApp e nas suas redes, se desejar.",
+    "footer": "Pr. Jefferson e Pra. Suélei",
+    "buttons": [
+      {
+        "id": "pode_enviar_div",
+        "text": "📲 Pode enviar",
+        "next": "envio_material"
+      }
+    ]
+  },
+  "envio_material": {
+    "title": "5️⃣ Envio do Material",
+    "text": "Perfeito! 🙌\n\nAqui está o primeiro material sobre o trabalho e a trajetória do Pr. Jefferson Campos e da Pra. Suélei.\n\nVocê pode compartilhar conforme a forma de participação que escolheu.\n\n🙏 Obrigado por caminhar conosco!",
+    "footer": "Pr. Jefferson e Pra. Suélei",
+    "buttons": [
+      {
+        "id": "recebi_material",
+        "text": "✅ Recebi, obrigado!",
+        "next": "acompanhamento"
+      }
+    ],
+    "image": "https://instagram.fsod12-1.fna.fbcdn.net/v/t51.82787-15/775726889_18578549317070662_4249428247061596666_n.webp?_nc_cat=102&_nc_map=urlgen_bucketless&ig_cache_key=Mzk2Nzk1NDk5NDk1OTU2NjE4Ng%3D%3D.3-ccb7-5&ccb=7-5&_nc_sid=58cdad&efg=eyJ2ZW5jb2RlX3RhZyI6IkZFRUQueHBpZHMuMTA4MC5zZHIucmVndWxhcl9waG90by5DMyJ9&_nc_ohc=eDdDCe5tke4Q7kNvwFfALA_&_nc_oc=AdoExQQaRpUdUDAh8vgbeW06CDTdBv1E68EyiUUTyXC2MViYP3HexC8YHKCTDfghdVfu0n3jNo3zjI3ZFve82SbY&_nc_zt=23&_nc_ht=instagram.fsod12-1.fna&_nc_gid=w2cwFRj4uII7QWg6W82Gig&_nc_ss=7b689&oh=00_AQK_J8PFY5GCfA8Pw5t1cPU23MvQP4mFhtSeyEkbdJz4YA&oe=6ABB64A0",
+    "imageCaption": "Obrigado por abrir esse espaço para estarmos mais perto! 💙  Vou enviar por aqui nossos materiais para você acompanhar essa caminhada. Quando quiser e se sentir à vontade, pode compartilhar com familiares e amigos.   Quero te apresentar um pouco melhor o Jefferson e a Suélei. 🙏🇧🇷  Jefferson Campos é pastor, advogado e deputado federal. Ao longo do seu trabalho, foram destinados mais de R$ 340 milhões para municípios de São Paulo, principalmente para saúde, infraestrutura e projetos sociais.  Suélei Gonçalves é jornalista e pastora, já esteve à frente das Secretarias da Cidadania e de Recursos Humanos de Sorocaba e tem atuação voltada às famílias, mulheres, crianças e pessoas com deficiência.  🗳️ Jefferson Campos | Federal | 2274 🗳️ Suélei Gonçalves | Estadual | 22744  Quer conhecer melhor a trajetória, o trabalho e as propostas?"
+  },
+  "acompanhamento": {
+    "title": "6️⃣ Acompanhamento",
+    "text": "Conseguiu receber o material?",
+    "footer": "Pr. Jefferson e Pra. Suélei",
+    "buttons": [
+      {
+        "id": "sim_tudo_certo",
+        "text": "✅ Sim, tudo certo",
+        "next": "finalizado"
+      },
+      {
+        "id": "preciso_ajuda",
+        "text": "📲 Preciso de ajuda",
+        "next": "suporte"
+      },
+      {
+        "id": "ainda_nao",
+        "text": "⏳ Ainda não consegui",
+        "next": "reenviar"
+      }
+    ]
+  },
+  "finalizado": {
+    "title": "🙏 Gratidão",
+    "text": "Que alegria! 🙏\n\nObrigado por caminhar conosco. Em breve enviaremos novos materiais.\n\nFique à vontade para nos chamar quando quiser.",
+    "footer": "Pr. Jefferson e Pra. Suélei",
+    "buttons": [
+      {
+        "id": "colinha",
+        "text": "Quero uma Colinha",
+        "next": "colinha"
+      }
+    ]
+  },
+  "suporte": {
+    "title": "📲 Suporte",
+    "text": "Sem problemas! 🙏\n\nMe conta o que aconteceu e vamos resolver juntos.",
+    "footer": "Pr. Jefferson e Pra. Suélei",
+    "buttons": [
+      {
+        "id": "voltar_inicio",
+        "text": "↩️ Voltar ao início",
+        "next": "inicio"
+      },
+      {
+        "id": "Colinha",
+        "text": "Quero uma Colinha",
+        "next": "colinha"
+      }
+    ]
+  },
+  "reenviar": {
+    "title": "⏳ Reenviar Material",
+    "text": "Vou reenviar agora mesmo! 🙏\n\nAguarde um instante...",
+    "footer": "Pr. Jefferson e Pra. Suélei",
+    "buttons": [
+      {
+        "id": "recebi_material",
+        "text": "✅ Recebi agora!",
+        "next": "acompanhamento"
+      }
+    ],
+    "image": "https://instagram.fsod12-1.fna.fbcdn.net/v/t51.82787-15/775726889_18578549317070662_4249428247061596666_n.webp?_nc_cat=102&_nc_map=urlgen_bucketless&ig_cache_key=Mzk2Nzk1NDk5NDk1OTU2NjE4Ng%3D%3D.3-ccb7-5&ccb=7-5&_nc_sid=58cdad&efg=eyJ2ZW5jb2RlX3RhZyI6IkZFRUQueHBpZHMuMTA4MC5zZHIucmVndWxhcl9waG90by5DMyJ9&_nc_ohc=eDdDCe5tke4Q7kNvwFfALA_&_nc_oc=AdoExQQaRpUdUDAh8vgbeW06CDTdBv1E68EyiUUTyXC2MViYP3HexC8YHKCTDfghdVfu0n3jNo3zjI3ZFve82SbY&_nc_zt=23&_nc_ht=instagram.fsod12-1.fna&_nc_gid=w2cwFRj4uII7QWg6W82Gig&_nc_ss=7b689&oh=00_AQK_J8PFY5GCfA8Pw5t1cPU23MvQP4mFhtSeyEkbdJz4YA&oe=6ABB64A0",
+    "imageCaption": "Obrigado por abrir esse espaço para estarmos mais perto! 💙  Vou enviar por aqui nossos materiais para você acompanhar essa caminhada. Quando quiser e se sentir à vontade, pode compartilhar com familiares e amigos.   Quero te apresentar um pouco melhor o Jefferson e a Suélei. 🙏🇧🇷  Jefferson Campos é pastor, advogado e deputado federal. Ao longo do seu trabalho, foram destinados mais de R$ 340 milhões para municípios de São Paulo, principalmente para saúde, infraestrutura e projetos sociais.  Suélei Gonçalves é jornalista e pastora, já esteve à frente das Secretarias da Cidadania e de Recursos Humanos de Sorocaba e tem atuação voltada às famílias, mulheres, crianças e pessoas com deficiência.  🗳️ Jefferson Campos | Federal | 2274 🗳️ Suélei Gonçalves | Estadual | 22744  Quer conhecer melhor a trajetória, o trabalho e as propostas?"
+  },
+  "acompanhar": {
+    "title": "📲 Apenas Acompanhar",
+    "text": "Perfeito! 📲🙏\n\nVamos enviar novidades e materiais periodicamente.\n\nFique à vontade para nos chamar quando quiser.",
+    "footer": "Pr. Jefferson e Pra. Suélei",
+    "buttons": [
+      {
+        "id": "voltar_inicio",
+        "text": "↩️ Voltar ao início",
+        "next": "inicio"
+      }
+    ]
+  },
+  "despedida": {
+    "title": "🙏 Tudo bem",
+    "text": "Entendido! 🙏\n\nSe mudar de ideia, é só nos chamar.\n\nQue Deus abençoe você e sua família!",
+    "footer": "Pr. Jefferson e Pra. Suélei",
+    "buttons": [
+      {
+        "id": "voltar_inicio",
+        "text": "↩️ Voltar ao início",
+        "next": "inicio"
+      }
+    ]
+  },
+  "colinha": {
+    "title": "Colinha",
+    "text": "*MINHA COLINHA ELEITORAL · SÃO PAULO*\n\n*DEPUTADO FEDERAL:* JEFFERSON CAMPOS | *2274*\n*DEPUTADA ESTADUAL:* SUÉLEI GONÇALVES | *22744*\n*SENADOR:* ANDRÉ DO PRADO | *222*\n*SENADOR:* GUILHERME DERRITE | *111*\n*GOVERNADOR:* TARCÍSIO | *10*\n*PRESIDENTE:* FLÁVIO BOLSONARO | *22*\n*PARTIDO LIBERAL (PL)*\n\n*Fé para acreditar, TRABALHO PARA AVANÇAR*\nConheça as propostas: https://jeffersonesuelei.com.br/#colinha",
+    "footer": "Pr. Jefferson e Pra. Suélei",
+    "buttons": []
+  }
+}

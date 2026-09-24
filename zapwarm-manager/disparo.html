@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="bg-gray-50 text-gray-900">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zapwarm API - Disparo em Massa</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="/manager/mobile.css">
+    <link rel="stylesheet" href="/manager/desktop-fix.css">
+</head>
+<body class="flex h-screen overflow-hidden font-sans antialiased">
+
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h1><i class="fa-solid fa-fire"></i> Zapwarm <span class="badge-api">API</span></h1>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="/manager/index.html" class="nav-item"><i class="fa-solid fa-server"></i><span>Instâncias</span></a>
+            <a href="/manager/mensagens.html" class="nav-item"><i class="fa-solid fa-paper-plane"></i><span>Mensagens</span></a>
+            <a href="/manager/disparo.html" class="nav-item active"><i class="fa-solid fa-bullhorn"></i><span>Disparo</span></a>
+            <a href="/manager/agentes.html" class="nav-item"><i class="fa-solid fa-robot"></i><span>Agentes de IA</span></a>
+            <a href="/manager/fluxos.html" class="nav-item"><i class="fa-solid fa-diagram-project"></i><span>Fluxos</span></a>
+            <a href="/manager/pedidos.html" class="nav-item"><i class="fa-solid fa-clipboard-list"></i><span>Pedidos</span></a>
+            <a href="/manager/pagamentos.html" class="nav-item"><i class="fa-solid fa-money-bill-wave"></i><span>Pagamentos</span></a>
+            <a href="/manager/webhooks.html" class="nav-item"><i class="fa-solid fa-bolt"></i><span>Webhooks</span></a>
+            <a href="/manager/configuracoes.html" class="nav-item"><i class="fa-solid fa-gear"></i><span>Configurações</span></a>
+            <a href="/docs" target="_blank" class="nav-item"><i class="fa-solid fa-book"></i><span>Documentação</span></a>
+        </nav>
+    </aside>
+
+    <main class="main">
+        <header class="top-header">
+            <button class="hamburger-btn" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
+            <h2 class="header-title">📢 Disparo em Massa</h2>
+            <div class="header-actions">
+                <button onclick="logout()" class="btn btn-secondary" style="min-height:42px;padding:10px 14px;" title="Sair">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                </button>
+            </div>
+        </header>
+
+        <div class="content">
+            <div class="content-wrapper" style="max-width:1000px;margin:0 auto;">
+
+                <!-- ABAS -->
+                <div style="display:flex;gap:8px;margin-bottom:20px;border-bottom:2px solid #f1f5f9;">
+                    <button id="tab-disparo" onclick="mudarAbaDisparo('disparo')" class="btn" style="background:transparent;border:none;border-bottom:3px solid #10b981;color:#10b981;font-weight:700;padding:10px 20px;cursor:pointer;font-size:15px;">
+                        📢 Disparo em Massa
+                    </button>
+                    <button id="tab-relatos" onclick="mudarAbaDisparo('relatos')" class="btn" style="background:transparent;border:none;border-bottom:3px solid transparent;color:#94a3b8;font-weight:700;padding:10px 20px;cursor:pointer;font-size:15px;">
+                        📝 Relatos <span id="badge-relatos" style="background:#ef4444;color:#fff;font-size:10px;padding:2px 6px;border-radius:999px;margin-left:4px;display:none;">0</span>
+                    </button>
+                </div>
+
+                <!-- CONTEUDO: DISPARO -->
+                <div id="conteudo-disparo">
+
+                <!-- AVISO -->
+                <div style="background:#fef3c7;border-left:4px solid #f59e0b;padding:14px 16px;border-radius:10px;margin-bottom:20px;">
+                    <p style="margin:0;font-size:13px;color:#92400e;">
+                        <strong>⚠️ IMPORTANTE:</strong> Estes números devem ter <strong>autorizado</strong> receber mensagens (Política WhatsApp Business + LGPD). O sistema só envia para quem tem opt-in registrado.
+                    </p>
+                </div>
+
+                <!-- KPIs -->
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px;">
+                    <div style="background:#fff;border-radius:14px;padding:16px;border:2px solid #f1f5f9;">
+                        <div style="font-size:11px;color:#64748b;text-transform:uppercase;">Opt-in</div>
+                        <div style="font-size:24px;font-weight:800;color:#10b981;" id="kpi-optin">0</div>
+                    </div>
+                    <div style="background:#fff;border-radius:14px;padding:16px;border:2px solid #f1f5f9;">
+                        <div style="font-size:11px;color:#64748b;text-transform:uppercase;">Opt-out</div>
+                        <div style="font-size:24px;font-weight:800;color:#ef4444;" id="kpi-optout">0</div>
+                    </div>
+                    <div style="background:#fff;border-radius:14px;padding:16px;border:2px solid #f1f5f9;">
+                        <div style="font-size:11px;color:#64748b;text-transform:uppercase;">Enviados hoje</div>
+                        <div style="font-size:24px;font-weight:800;color:#6366f1;" id="kpi-hoje">0/50</div>
+                    </div>
+                </div>
+
+                <!-- FORMULÁRIO -->
+                <div style="background:#fff;border-radius:14px;padding:20px;border:2px solid #f1f5f9;">
+
+                    <label style="display:flex;align-items:center;gap:10px;padding:12px;background:#f0fdf4;border:2px solid #86efac;border-radius:10px;margin-bottom:20px;cursor:pointer;">
+                        <input type="checkbox" id="confirma-optin" style="width:20px;height:20px;accent-color:#10b981;">
+                        <div><strong style="font-size:14px;color:#065f46;">✅ Confirmo que todos estes números autorizaram receber mensagens</strong>
+                        <div style="font-size:12px;color:#047857;">Sem isso, o disparo pode bloquear seu número</div></div>
+                    </label>
+
+                    <label style="display:flex;align-items:flex-start;gap:12px;padding:12px;background:#fef3c7;border:2px solid #fcd34d;border-radius:10px;margin-bottom:20px;cursor:pointer;">
+                        <input type="checkbox" id="primeiro-contato" style="width:20px;height:20px;accent-color:#f59e0b;margin-top:2px;flex-shrink:0;">
+                        <div>
+                            <strong style="font-size:14px;color:#92400e;">PRIMEIRO CONTATO (opt-in automatico)</strong>
+                            <div style="font-size:12px;color:#78350f;margin-top:4px;">Marque APENAS quando for a 1a vez que estes numeros recebem sua mensagem. O bot pergunta autorizacao no fluxo e registra o opt-in automaticamente quando o cliente clicar em "Sim, autorizo".</div>
+                        </div>
+                    </label>
+
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+                        <div>
+                            <label style="display:block;font-size:12px;font-weight:700;color:#475569;margin-bottom:6px;">📱 INSTÂNCIA</label>
+                            <select id="disparo-instancia" style="width:100%;padding:10px 14px;border:1px solid #e2e8f0;border-radius:10px;font-size:14px;"></select>
+                        </div>
+                        <div>
+                            <label style="display:block;font-size:12px;font-weight:700;color:#475569;margin-bottom:6px;">🎯 MODO</label>
+                            <select id="disparo-modo" onchange="mudarModo()" style="width:100%;padding:10px 14px;border:1px solid #e2e8f0;border-radius:10px;font-size:14px;">
+                                <option value="fluxo">🔀 Iniciar Fluxo (envia menu)</option>
+                                <option value="texto">💬 Mensagem de texto</option>
+                                <option value="imagem">🖼️ Mensagem + Imagem</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="campo-flow" style="margin-bottom:16px;">
+                        <label style="display:block;font-size:12px;font-weight:700;color:#475569;margin-bottom:6px;">📋 FLUXO</label>
+                        <select id="disparo-flow" style="width:100%;padding:10px 14px;border:1px solid #e2e8f0;border-radius:10px;font-size:14px;"></select>
+                    </div>
+
+                    <div id="campo-mensagem" style="margin-bottom:16px;display:none;">
+                        <label style="display:block;font-size:12px;font-weight:700;color:#475569;margin-bottom:6px;">💬 MENSAGEM</label>
+                        <textarea id="disparo-mensagem" placeholder="Olá {nome}, tudo bem?" style="width:100%;padding:12px;border:1px solid #e2e8f0;border-radius:10px;font-size:14px;height:100px;box-sizing:border-box;resize:vertical;"></textarea>
+                    </div>
+
+                    <div id="campo-imagem" style="margin-bottom:16px;display:none;">
+                        <label style="display:block;font-size:12px;font-weight:700;color:#475569;margin-bottom:6px;">🖼️ URL DA IMAGEM</label>
+                        <input id="disparo-imagem" type="text" placeholder="https://exemplo.com/imagem.jpg" style="width:100%;padding:10px 14px;border:1px solid #e2e8f0;border-radius:10px;font-size:14px;box-sizing:border-box;">
+                    </div>
+
+                    <div style="margin-bottom:16px;">
+                        <label style="display:block;font-size:12px;font-weight:700;color:#475569;margin-bottom:6px;">📝 DESTINATÁRIOS (um por linha, com DDI)</label>
+                        <textarea id="disparo-numeros" placeholder="5515999999999&#10;5515988888888" style="width:100%;padding:12px;border:1px solid #e2e8f0;border-radius:10px;font-size:14px;height:140px;box-sizing:border-box;resize:vertical;font-family:monospace;"></textarea>
+                        <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
+                            <button onclick="importarCSV()" class="btn btn-secondary" style="padding:8px 14px;font-size:12px;">
+                                <i class="fa-solid fa-file-csv"></i> Importar CSV
+                            </button>
+                            <button onclick="colarOptin()" class="btn btn-secondary" style="padding:8px 14px;font-size:12px;">
+                                <i class="fa-solid fa-clipboard-list"></i> Colar do Opt-in
+                            </button>
+                        </div>
+                    </div>
+
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
+                        <div>
+                            <label style="display:block;font-size:12px;font-weight:700;color:#475569;margin-bottom:6px;">⏱️ DELAY MÍN (seg)</label>
+                            <input id="disparo-delay-min" type="number" value="20" min="10" style="width:100%;padding:10px 14px;border:1px solid #e2e8f0;border-radius:10px;font-size:14px;box-sizing:border-box;">
+                        </div>
+                        <div>
+                            <label style="display:block;font-size:12px;font-weight:700;color:#475569;margin-bottom:6px;">⏱️ DELAY MÁX (seg)</label>
+                            <input id="disparo-delay-max" type="number" value="35" min="15" style="width:100%;padding:10px 14px;border:1px solid #e2e8f0;border-radius:10px;font-size:14px;box-sizing:border-box;">
+                        </div>
+                    </div>
+
+                    <div id="progresso" style="display:none;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:16px;margin-bottom:20px;">
+                        <div style="display:flex;justify-content:space-between;margin-bottom:8px;font-size:13px;font-weight:700;color:#1e293b;">
+                            <span id="progresso-texto">0/0</span>
+                            <span id="progresso-status">Aguardando...</span>
+                        </div>
+                        <div style="height:8px;background:#e2e8f0;border-radius:999px;overflow:hidden;margin-bottom:12px;">
+                            <div id="progresso-barra" style="height:100%;background:#10b981;width:0%;transition:width 0.3s;"></div>
+                        </div>
+                        <div style="display:flex;gap:16px;font-size:12px;">
+                            <span style="color:#10b981;">✅ <span id="progresso-ok">0</span> sucessos</span>
+                            <span style="color:#ef4444;">❌ <span id="progresso-erro">0</span> erros</span>
+                        </div>
+                    </div>
+
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                        <button id="btn-iniciar" onclick="iniciarDisparo()" class="btn btn-primary" style="min-height:42px;padding:10px 20px;">
+                            <i class="fa-solid fa-play"></i> Iniciar Disparo
+                        </button>
+                        <button id="btn-pausar" onclick="pausarDisparo()" class="btn btn-secondary" style="min-height:42px;padding:10px 16px;display:none;">
+                            <i class="fa-solid fa-pause"></i> Pausar
+                        </button>
+                        <button id="btn-cancelar" onclick="cancelarDisparo()" class="btn btn-secondary" style="min-height:42px;padding:10px 16px;display:none;color:#ef4444;">
+                            <i class="fa-solid fa-stop"></i> Cancelar
+                        </button>
+                    </div>
+
+                </div>
+
+                </div><!-- /conteudo-disparo -->
+
+                <!-- CONTEUDO: RELATOS -->
+                <div id="conteudo-relatos" style="display:none;">
+                    <div style="background:#fff;border-radius:14px;padding:20px;border:2px solid #f1f5f9;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+                            <h3 style="font-size:18px;font-weight:700;margin:0;color:#1e293b;">
+                                📝 Relatos de Suporte
+                            </h3>
+                            <button onclick="carregarRelatos()" class="btn btn-secondary" style="min-height:40px;padding:8px 14px;">
+                                <i class="fa-solid fa-rotate"></i> Recarregar
+                            </button>
+                        </div>
+                        <p style="margin:0 0 16px;font-size:13px;color:#64748b;">
+                            Relatos enviados pelos clientes através do nó "Suporte" do fluxo.
+                        </p>
+                        <div id="relatos-list">
+                            <div style="text-align:center;padding:40px;color:#94a3b8;">
+                                <i class="fa-solid fa-spinner fa-spin text-2xl"></i>
+                                <p>Carregando relatos...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <script src="/manager/app.js"></script>
+    <script src="/manager/disparo.js"></script>
+</body>
+</html>

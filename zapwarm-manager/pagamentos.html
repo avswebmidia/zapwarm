@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="bg-gray-50 text-gray-900">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zapwarm API - Pagamentos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="/manager/mobile.css">
+    <link rel="stylesheet" href="/manager/desktop-fix.css">
+    <style>
+        .config-section {
+            background: #fff;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            border: 1px solid #f1f5f9;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        }
+        .config-section h3 {
+            font-size: 17px;
+            font-weight: 700;
+            color: #1e293b;
+            margin: 0 0 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .config-section h3 i { color: #10b981; }
+        .label-config {
+            display: block;
+            font-size: 12px;
+            font-weight: 700;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+        .input-config {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 14px;
+            font-family: inherit;
+            color: #1e293b;
+            box-sizing: border-box;
+            transition: all 0.2s;
+        }
+        .input-config:focus {
+            outline: none;
+            border-color: #10b981;
+            box-shadow: 0 0 0 3px rgba(16,185,129,0.15);
+        }
+        .btn-save-config {
+            width: 100%;
+            padding: 12px;
+            background: #10b981;
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn-save-config:hover { background: #059669; }
+        .btn-save-config:disabled { opacity: 0.6; cursor: not-allowed; }
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .status-badge.active { background: #d1fae5; color: #065f46; }
+        .status-badge.inactive { background: #fee2e2; color: #991b1b; }
+        .status-badge.global { background: #dbeafe; color: #1e40af; }
+        .help-text { font-size: 11px; color: #94a3b8; margin-top: 6px; line-height: 1.5; }
+        .help-text a { color: #10b981; text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="app-layout">
+        <div class="sidebar-overlay" onclick="closeSidebar()"></div>
+        
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1><i class="fa-solid fa-fire"></i> Zapwarm <span class="badge-api">API</span></h1>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="/manager/index.html" class="nav-item"><i class="fa-solid fa-server"></i><span>Instâncias</span></a>
+                <a href="/manager/mensagens.html" class="nav-item"><i class="fa-solid fa-paper-plane"></i><span>Mensagens</span></a>
+            <a href="/manager/disparo.html" class="nav-item"><i class="fa-solid fa-bullhorn"></i><span>Disparo</span></a>
+                <a href="/manager/agentes.html" class="nav-item"><i class="fa-solid fa-robot"></i><span>Agentes de IA</span></a>
+                <a href="/manager/fluxos.html" class="nav-item"><i class="fa-solid fa-diagram-project"></i><span>Fluxos</span></a>
+                <a href="/manager/pagamentos.html" class="nav-item active"><i class="fa-solid fa-money-bill-wave"></i><span>Pagamentos</span><span class="nav-badge">Novo</span></a>
+                <a href="/manager/webhooks.html" class="nav-item"><i class="fa-solid fa-bolt"></i><span>Webhooks</span></a>
+                <a href="/manager/configuracoes.html" class="nav-item"><i class="fa-solid fa-gear"></i><span>Configurações</span></a>
+                <a href="/docs" target="_blank" class="nav-item"><i class="fa-solid fa-book"></i><span>Documentação</span></a>
+            </nav>
+        </aside>
+        
+        <main class="main">
+            <header class="top-header">
+                <button class="hamburger-btn" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
+                <h2 class="header-title">Pagamentos PIX</h2>
+                <div class="header-actions">
+                    <button onclick="logout()" class="btn btn-secondary" style="min-height:42px;padding:10px 14px;" title="Sair">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                    </button>
+                </div>
+            </header>
+            
+            <div class="content">
+                <div class="content-wrapper" style="max-width:900px;margin:0 auto;">
+                    
+                    <div class="config-section">
+                        <h3><i class="fa-solid fa-money-bill-wave"></i> Configurar Mercado Pago</h3>
+                        <p class="help-text" style="margin-bottom:16px;">
+                            Configure suas credenciais do Mercado Pago para aceitar pagamentos PIX via WhatsApp.
+                            Obtenha em <a href="https://www.mercadopago.com.br/developers/panel/app" target="_blank">mercadopago.com.br/developers/panel/app</a>.
+                        </p>
+
+                        <div style="margin-bottom:16px;">
+                            <label class="label-config">INSTÂNCIA</label>
+                            <select id="mp-instance-select" class="input-config" onchange="carregarConfigMp()">
+                                <option value="">Carregando...</option>
+                            </select>
+                        </div>
+
+                        <div id="mp-status" style="margin-bottom:16px;display:none;">
+                            <label class="label-config">STATUS ATUAL</label>
+                            <div id="mp-status-badge"></div>
+                        </div>
+
+                        <div id="mp-form" style="display:none;">
+                            <div style="background:#f9fafb;padding:12px;border-radius:10px;border:1px solid #e5e7eb;margin-bottom:16px;">
+                                <label style="display:flex;align-items:center;gap:10px;font-size:14px;font-weight:600;color:#374151;cursor:pointer;">
+                                    <input type="checkbox" id="mp-enabled" style="width:20px;height:20px;accent-color:#10b981;">
+                                    Ativar pagamento PIX nesta instância
+                                </label>
+                            </div>
+
+                            <div style="margin-bottom:16px;">
+                                <label class="label-config">ACCESS TOKEN (produção)</label>
+                                <div style="position:relative;">
+                                    <input type="password" id="mp-access-token" class="input-config" 
+                                           placeholder="APP_USR-... ou TEST-..." 
+                                           style="font-family:monospace;padding-right:44px;">
+                                    <button type="button" onclick="togglePassword('mp-access-token', this)" 
+                                            style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:#94a3b8;cursor:pointer;padding:8px;font-size:16px;">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </button>
+                                </div>
+                                <div class="help-text" id="mp-token-info"></div>
+                            </div>
+
+                            <div style="margin-bottom:16px;">
+                                <label class="label-config">PUBLIC KEY</label>
+                                <div style="position:relative;">
+                                    <input type="text" id="mp-public-key" class="input-config" 
+                                           placeholder="APP_USR-... ou TEST-..." 
+                                           style="font-family:monospace;padding-right:44px;">
+                                    <button type="button" onclick="togglePassword('mp-public-key', this)" 
+                                            style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:#94a3b8;cursor:pointer;padding:8px;font-size:16px;">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <button onclick="salvarConfigMp()" class="btn-save-config">
+                                <i class="fa-solid fa-save"></i> Salvar Configurações
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="config-section">
+                        <h3><i class="fa-solid fa-link"></i> URL do Webhook</h3>
+                        <p class="help-text" style="margin-bottom:12px;">
+                            Configure esta URL no painel do Mercado Pago em <strong>Webhooks</strong> para receber confirmações.
+                        </p>
+                        <div style="background:#f0fdf4;padding:14px;border-radius:10px;border:1px solid #bbf7d0;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+                            <code style="font-family:monospace;font-size:13px;color:#166534;word-break:break-all;">https://api.zapbulk.com.br/webhook/mp</code>
+                            <button onclick="copiarWebhook()" class="btn btn-secondary" style="padding:6px 12px;font-size:12px;min-height:32px;">
+                                <i class="fa-solid fa-copy"></i> Copiar
+                            </button>
+                        </div>
+                        <p class="help-text" style="margin-top:12px;">
+                            <strong>Eventos:</strong> marque apenas <code>Pagamentos</code> (payment).
+                        </p>
+                    </div>
+
+                </div>
+</div>
+        </main>
+    </div>
+
+    <script src="/manager/app.js"></script>
+    <script src="/manager/pagamentos.js"></script>
+</body>
+</html>

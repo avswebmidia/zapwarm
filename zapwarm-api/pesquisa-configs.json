@@ -1,0 +1,7 @@
+{
+  "teste_agora": {
+    "enabled": true,
+    "mensagem": "Ola! Como voce avalia?",
+    "timeoutMinutos": 30
+  }
+}

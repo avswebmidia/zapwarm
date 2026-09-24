@@ -1,0 +1,173 @@
+{
+  "inicio": {
+    "title": "🙏 Pr. Jefferson e Pra. Suélei",
+    "text": "Aqui é o Pr. Jefferson e a Pra. Suélei. Tudo bem com você?",
+    "footer": "Caminhada e atuação pública",
+    "buttons": [
+      {
+        "id": "paz",
+        "text": "🙏 Paz!",
+        "next": "conexao"
+      }
+    ]
+  },
+  "conexao": {
+    "title": "2️⃣ Conexão",
+    "text": "Estamos compartilhando informações sobre nossa caminhada e atuação pública.\n\nQuer acompanhar e participar conosco?",
+    "footer": "Pr. Jefferson e Pra. Suélei",
+    "buttons": [
+      {
+        "id": "sim_participar",
+        "text": "🙏 Sim, quero participar",
+        "next": "como_participar"
+      },
+      {
+        "id": "apenas_acompanhar",
+        "text": "📲 Quero apenas acompanhar",
+        "next": "acompanhar"
+      },
+      {
+        "id": "nao_receber",
+        "text": "❌ Prefiro não receber",
+        "next": "despedida"
+      }
+    ]
+  },
+  "como_participar": {
+    "title": "3️⃣ Como participar",
+    "text": "Que bom contar com você! 🙏\n\nTemos duas formas de participação:\n\n👥 *Multiplicador* — compartilhar informações com pelo menos 10 pessoas.\n\n📲 *Divulgador Digital* — compartilhar os materiais oficiais em suas redes e Status.\n\nQual você prefere?",
+    "footer": "Pr. Jefferson e Pra. Suélei",
+    "buttons": [
+      {
+        "id": "multiplicador",
+        "text": "👥 Quero ser Multiplicador",
+        "next": "msg_multiplicador"
+      },
+      {
+        "id": "divulgador",
+        "text": "📲 Quero ser Divulgador Digital",
+        "next": "msg_divulgador"
+      }
+    ]
+  },
+  "msg_multiplicador": {
+    "title": "👥 Multiplicador",
+    "text": "Perfeito! 👥🙏\n\nVocê será nosso *Multiplicador*.\n\nVamos enviar materiais oficiais para você compartilhar com pelo menos 10 pessoas do seu círculo.",
+    "footer": "Pr. Jefferson e Pra. Suélei",
+    "buttons": [
+      {
+        "id": "pode_enviar_mult",
+        "text": "🙌 Pode enviar",
+        "next": "envio_material"
+      }
+    ]
+  },
+  "msg_divulgador": {
+    "title": "📲 Divulgador Digital",
+    "text": "Perfeito! 📲🙏\n\nVocê será nosso *Divulgador Digital*.\n\nVamos enviar materiais oficiais para você compartilhar no WhatsApp e nas suas redes, se desejar.",
+    "footer": "Pr. Jefferson e Pra. Suélei",
+    "buttons": [
+      {
+        "id": "pode_enviar_div",
+        "text": "📲 Pode enviar",
+        "next": "envio_material"
+      }
+    ]
+  },
+  "envio_material": {
+    "title": "5️⃣ Envio do Material",
+    "text": "Perfeito! 🙌\n\nAqui está o primeiro material sobre o trabalho e a trajetória do Pr. Jefferson Campos e da Pra. Suélei.\n\nVocê pode compartilhar conforme a forma de participação que escolheu.\n\n🙏 Obrigado por caminhar conosco!\n\nhttps://jeffersonesuelei.com.br/\n",
+    "footer": "Pr. Jefferson e Pra. Suélei",
+    "image": "https://jeffersonesuelei.com.br/wp-content/uploads/2026/09/material1.jpg",
+    "buttons": [
+      {
+        "id": "recebi_material",
+        "text": "✅ Recebi, obrigado!",
+        "next": "acompanhamento"
+      }
+    ]
+  },
+  "acompanhamento": {
+    "title": "6️⃣ Acompanhamento",
+    "text": "Conseguiu receber o material?",
+    "footer": "Pr. Jefferson e Pra. Suélei",
+    "buttons": [
+      {
+        "id": "sim_tudo_certo",
+        "text": "✅ Sim, tudo certo",
+        "next": "finalizado"
+      },
+      {
+        "id": "preciso_ajuda",
+        "text": "📲 Preciso de ajuda",
+        "next": "suporte"
+      },
+      {
+        "id": "ainda_nao",
+        "text": "⏳ Ainda não consegui",
+        "next": "reenviar"
+      }
+    ]
+  },
+  "finalizado": {
+    "title": "🙏 Gratidão",
+    "text": "Que alegria! 🙏\n\nObrigado por caminhar conosco. Em breve enviaremos novos materiais.\n\nFique à vontade para nos chamar quando quiser.",
+    "footer": "Pr. Jefferson e Pra. Suélei",
+    "buttons": [
+      {
+        "id": "voltar_inicio",
+        "text": "↩️ Voltar ao início",
+        "next": "inicio"
+      }
+    ]
+  },
+  "suporte": {
+    "title": "📲 Suporte",
+    "text": "Sem problemas! 🙏\n\nMe conta o que aconteceu:\n\n_(ou digite \"cancelar\" para voltar)_",
+    "footer": "Pr. Jefferson e Pra. Suélei",
+    "buttons": [
+      {
+        "id": "voltar_inicio",
+        "text": "↩️ Voltar ao início",
+        "next": "inicio"
+      }
+    ]
+  },
+  "reenviar": {
+    "title": "⏳ Reenviar Material",
+    "text": "Vou reenviar agora mesmo! 🙏\n\nAguarde um instante...",
+    "footer": "Pr. Jefferson e Pra. Suélei",
+    "image": "https://exemplo.com/material1.jpg",
+    "buttons": [
+      {
+        "id": "recebi_material",
+        "text": "✅ Recebi agora!",
+        "next": "acompanhamento"
+      }
+    ]
+  },
+  "acompanhar": {
+    "title": "📲 Apenas Acompanhar",
+    "text": "Perfeito! 📲🙏\n\nVamos enviar novidades e materiais periodicamente.\n\nFique à vontade para nos chamar quando quiser.",
+    "footer": "Pr. Jefferson e Pra. Suélei",
+    "buttons": [
+      {
+        "id": "voltar_inicio",
+        "text": "↩️ Voltar ao início",
+        "next": "inicio"
+      }
+    ]
+  },
+  "despedida": {
+    "title": "🙏 Tudo bem",
+    "text": "Entendido! 🙏\n\nSe mudar de ideia, é só nos chamar.\n\nQue Deus abençoe você e sua família!",
+    "footer": "Pr. Jefferson e Pra. Suélei",
+    "buttons": [
+      {
+        "id": "voltar_inicio",
+        "text": "↩️ Voltar ao início",
+        "next": "inicio"
+      }
+    ]
+  }
+}
