@@ -68,3 +68,14 @@ logs/
 # Sistema
 .DS_Store
 Thumbs.db
+
+# Arquivos lixo (criados por acidente ao colar código)
+zapwarm-api/const
+zapwarm-api/let
+zapwarm-api/return
+zapwarm-api/try
+zapwarm-api/continue
+zapwarm-api/delete
+zapwarm-api/}
+zapwarm-api/}]
+zapwarm-api/*:

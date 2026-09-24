@@ -604,17 +604,6 @@ async function startInstance(name, token, phoneNumber = null) {
 
 sock.ev.on('messages.upsert', async (m) => {
 
-      // 🔍 DEBUG TOTAL
-      console.log('🔍 [RAW] messages.upsert tipo:', m.type, 'qtd:', m.messages?.length || 0);
-      if (m.messages && m.messages[0]) {
-        const mm = m.messages[0];
-        console.log('🔍 [RAW] fromMe:', mm.key?.fromMe, 'remoteJid:', mm.key?.remoteJid);
-        console.log('🔍 [RAW] keys do message:', Object.keys(mm.message || {}).join(', '));
-        if (mm.message) {
-          console.log('🔍 [RAW] message completo:', JSON.stringify(mm.message).substring(0, 500));
-        }
-      }
-
 
       // ✅ FIX TDZ v2: promptAgente declarado no topo do handler
       const promptAgente = getPromptAgente(name);
@@ -641,37 +630,25 @@ sock.ev.on('messages.upsert', async (m) => {
       let buttonId = '';
 
       // 🔍 DEBUG temporário
-      console.log(`🔍 [DEBUG] keys:`, Object.keys(msg.message || {}).join(', '));
-
       if (msg.message.buttonsResponseMessage) {
         buttonId = msg.message.buttonsResponseMessage.selectedButtonId;
         textMessage = buttonId;
-        isButtonClick = true;
-        console.log(`🔍 [DEBUG] buttonsResponse -> ${buttonId}`);
-      } else if (msg.message.templateButtonReplyMessage) {
+        isButtonClick = true;      } else if (msg.message.templateButtonReplyMessage) {
         buttonId = msg.message.templateButtonReplyMessage.selectedId;
         textMessage = buttonId;
-        isButtonClick = true;
-        console.log(`🔍 [DEBUG] templateButton -> ${buttonId}`);
-      } else if (msg.message.listResponseMessage) {
+        isButtonClick = true;      } else if (msg.message.listResponseMessage) {
         buttonId = msg.message.listResponseMessage.singleSelectReply?.selectedRowId;
         textMessage = buttonId;
-        isButtonClick = true;
-        console.log(`🔍 [DEBUG] listResponse -> ${buttonId}`);
-      } else if (msg.message.interactiveResponseMessage) {
+        isButtonClick = true;      } else if (msg.message.interactiveResponseMessage) {
         // ✅ NOVO: respostas de lista nativa via @qadeerxtech/qadeer-btns
         try {
-          const ir = msg.message.interactiveResponseMessage;
-          console.log(`🔍 [DEBUG] interactiveResponse raw:`, JSON.stringify(ir).substring(0, 500));
-          let params = ir.nativeFlowResponseMessage?.paramsJson;
+          const ir = msg.message.interactiveResponseMessage;          let params = ir.nativeFlowResponseMessage?.paramsJson;
           if (typeof params === 'string') {
             try { params = JSON.parse(params); } catch(e) {}
           }
           buttonId = (params && (params.id || params.selectedId || params.selectedRowId)) || ir.nativeFlowResponseMessage?.name || '';
           textMessage = buttonId;
-          isButtonClick = true;
-          console.log(`🔍 [DEBUG] interactiveResponse -> ${buttonId}`);
-        } catch (e) {
+          isButtonClick = true;        } catch (e) {
           console.error('Erro parse interactiveResponseMessage:', e.message);
         }
       } else {
@@ -1826,13 +1803,23 @@ app.post('/message/send-text', async (req, res) => {
     const { number, text } = req.body;
 
     if (!number || !text) {
-      return res.status(400).json({ success: false, error: 'number e text são obrigatórios' });
+      return res.status(400).json({ success: false, error: 'number e text sao obrigatorios' });
     }
 
-    const result = await data.sock.sendMessage(normalizeJid(number), { text });
+    // FIX: aceita @lid ou @s.whatsapp.net
+    let jid;
+    if (number.includes('@')) {
+      jid = number;
+    } else {
+      jid = normalizeJid(number);
+    }
 
-    res.json({ success: true, messageId: result.key.id });
+    console.log('send-text para ' + jid);
+    const result = await data.sock.sendMessage(jid, { text });
+
+    res.json({ success: true, messageId: result.key.id, jid: jid });
   } catch (error) {
+    console.error('Erro send-text:', error.message);
     res.status(error.status || 500).json({ success: false, error: error.message });
   }
 });
@@ -3674,7 +3661,46 @@ function temOptout(telefone) {
 // ============================================================
 // FILA DE DISPARO EM MASSA
 // ============================================================
-const disparoJobs = new Map();  // jobId -> { status, total, enviados, erros, fila, ... }
+const disparoJobs = new Map();
+
+// ============================================================
+// HISTORICO DE DISPAROS (persiste em disco)
+// ============================================================
+const DISPARO_HISTORICO_FILE = path.join(__dirname, 'disparo-historico.json');
+
+function loadDisparoHistorico() {
+  try {
+    if (!fs.existsSync(DISPARO_HISTORICO_FILE)) return { jobs: [] };
+    return JSON.parse(fs.readFileSync(DISPARO_HISTORICO_FILE, 'utf8'));
+  } catch (e) { return { jobs: [] }; }
+}
+
+function saveDisparoHistorico(d) {
+  try { fs.writeFileSync(DISPARO_HISTORICO_FILE, JSON.stringify(d, null, 2)); } catch (e) {}
+}
+
+function registrarDisparoHistorico(job) {
+  try {
+    const d = loadDisparoHistorico();
+    d.jobs = (d.jobs || []).filter(j => j.id !== job.id);
+    d.jobs.push({
+      id: job.id,
+      instance: job.instance,
+      modo: job.modo,
+      total: job.total,
+      enviados: job.enviados,
+      erros: job.erros,
+      iniciadoEm: job.iniciadoEm,
+      fim: job.fim || new Date().toISOString(),
+      status: job.status
+    });
+    if (d.jobs.length > 500) d.jobs = d.jobs.slice(-500);
+    saveDisparoHistorico(d);
+    console.log(`Historico: ${job.id} (${job.enviados}/${job.total})`);
+  } catch (e) { console.warn('Erro historico:', e.message); }
+}
+
+  // jobId -> { status, total, enviados, erros, fila, ... }
 
 function gerarJobId() {
   return 'job_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8);
@@ -3785,6 +3811,7 @@ async function processarDisparo(jobId) {
   job.status = 'concluido';
   job.fim = new Date().toISOString();
   console.log(`✅ Disparo ${jobId} concluído: ${job.enviados} ok, ${job.erros} erros`);
+  registrarDisparoHistorico(job);
 }
 
 
@@ -4694,8 +4721,15 @@ app.get('/disparo/stats', (req, res) => {
     const out = loadOptout();
     const hoje = new Date().toISOString().slice(0, 10);
     let enviadosHoje = 0;
+    let totalEnviados = 0;
+    const hist = loadDisparoHistorico();
+    for (const job of (hist.jobs || [])) {
+      const dataJob = (job.iniciadoEm || '').slice(0, 10);
+      if (dataJob === hoje) enviadosHoje += job.enviados || 0;
+      totalEnviados += job.enviados || 0;
+    }
     for (const job of disparoJobs.values()) {
-      if ((job.iniciadoEm || '').startsWith(hoje)) {
+      if ((job.iniciadoEm || '').startsWith(hoje) && job.status === 'rodando') {
         enviadosHoje += job.enviados;
       }
     }
@@ -4704,8 +4738,17 @@ app.get('/disparo/stats', (req, res) => {
       optin: Object.keys(inp.numeros || {}).length,
       optout: Object.keys(out.numeros || {}).length,
       enviadosHoje,
+      totalEnviados,
       limiteDiario: 50
     });
+  } catch (e) { res.status(500).json({ success: false, error: e.message }); }
+});
+
+app.get('/disparo/historico', (req, res) => {
+  try {
+    const hist = loadDisparoHistorico();
+    const jobs = (hist.jobs || []).sort((a, b) => new Date(b.iniciadoEm) - new Date(a.iniciadoEm));
+    res.json({ success: true, total: jobs.length, jobs });
   } catch (e) { res.status(500).json({ success: false, error: e.message }); }
 });
 
@@ -4755,7 +4798,8 @@ app.post('/disparo/start', async (req, res) => {
       iniciadoEm: new Date().toISOString()
     };
     disparoJobs.set(jobId, job);
-    console.log(`📢 Disparo ${jobId} iniciado: ${job.total} números (modo: ${job.modo})`);
+    console.log(`Disparo ${jobId} iniciado: ${job.total} numeros (modo: ${job.modo})`);
+    registrarDisparoHistorico(job);
 
     // Processa em background
     processarDisparo(jobId).catch(e => console.error('Erro processarDisparo:', e.message));

@@ -298,18 +298,16 @@ async function carregarRelatos() {
                         '<div style="margin-top:8px;padding:10px;background:#f8fafc;border-radius:8px;font-size:13px;color:#334155;white-space:pre-wrap;">' + (r.mensagem || '') + '</div>' +
                         '<div style="margin-top:6px;font-size:11px;color:#94a3b8;">' + dataFmt + '</div>' +
                     '</div>' +
-                    '<div style="display:flex;flex-direction:column;gap:6px;">' +
-                        (r.cliente.telefone && !r.cliente.telefone.startsWith('71438') && r.cliente.telefone.length >= 10
-                            ? '<a href="https://wa.me/' + r.cliente.telefone + '" target="_blank" class="btn btn-primary" style="padding:6px 12px;font-size:12px;min-height:32px;text-decoration:none;text-align:center;display:inline-flex;align-items:center;gap:4px;justify-content:center;">' +
-                                '<i class="fa-solid fa-comment"></i> Responder' +
-                              '</a>'
-                            : '<span style="padding:6px 12px;font-size:11px;background:#fef3c7;color:#92400e;border-radius:6px;text-align:center;" title="Este cliente usa WhatsApp multi-device. O ID interno não abre link direto.">' +
-                                '⚠️ ID interno' +
-                              '</span>'
-                        ) +
-                        '<button onclick="removerRelato(\'' + r.id + '\')" class="btn btn-secondary" style="padding:6px 12px;font-size:12px;min-height:32px;color:#ef4444;">' +
-                            '<i class="fa-solid fa-trash"></i>' +
+                    '<div style="display:flex;flex-direction:column;gap:6px;min-width:110px;">' +
+                        '<button onclick="responderPeloPainel(\'' + (r.cliente.remoteJid || r.cliente.telefone) + '\', \'' + (r.instance || '') + '\')" class="btn btn-primary" style="padding:6px 12px;font-size:12px;min-height:32px;background:#10b981;">' +
+                            '<i class="fa-solid fa-comment"></i> Responder' +
                         '</button>' +
+                        '<button onclick="responderPeloPainel(\'' + (r.cliente.telefone || '') + '\')" class="btn btn-secondary" style="padding:6px 12px;font-size:12px;min-height:32px;background:#fef3c7;color:#92400e;border:1px solid #fcd34d;">' +
+                            '<i class="fa-solid fa-copy"></i> Copiar ID' +
+                        '</button>' +
+                        '<button onclick="removerRelato(\'' + r.id + '\')" class="btn btn-secondary" style="padding:6px 12px;font-size:12px;min-height:32px;color:#ef4444;">' +
+                            '<i class="fa-solid fa-trash"></i> Excluir' +
+                        '</button>'
                     '</div>' +
                 '</div>' +
             '</div>';
@@ -364,9 +362,8 @@ async function responderPeloPainel(remoteJid, instance) {
     var result = await Swal.fire({
         title: 'Responder',
         input: 'textarea',
-        inputLabel: 'Para: ' + remoteJid.substring(0, 30) + '...',
+        inputLabel: 'Mensagem para o cliente',
         inputPlaceholder: 'Digite sua resposta...',
-        inputAttributes: { style: 'height:120px;font-size:14px;' },
         showCancelButton: true,
         confirmButtonText: 'Enviar',
         cancelButtonText: 'Cancelar',
@@ -381,17 +378,23 @@ async function responderPeloPainel(remoteJid, instance) {
     Swal.fire({ title: 'Enviando...', allowOutsideClick: false, didOpen: function() { Swal.showLoading(); } });
 
     try {
+        var instList = await apiFetch('/instance/list');
+        var inst = (instList.instances || []).find(function(i) { return i.instance === instance; });
+        var token = inst ? inst.token : '';
+        if (!token) return Swal.fire('Erro', 'Token nao encontrado', 'error');
+
         var res = await apiFetch('/message/send-text', {
             method: 'POST',
-            headers: { instance: instance },
+            headers: { instance: instance, token: token },
             body: JSON.stringify({
                 instance: instance,
+                token: token,
                 number: remoteJid,
                 text: result.value
             })
         });
 
-        if (res.success || res.id || res.key) {
+        if (res.success || res.messageId) {
             Swal.fire({ icon: 'success', title: 'Enviado!', timer: 1500, showConfirmButton: false });
         } else {
             Swal.fire('Erro', res.error || 'Falha ao enviar', 'error');
@@ -399,4 +402,19 @@ async function responderPeloPainel(remoteJid, instance) {
     } catch (e) {
         Swal.fire('Erro', e.message, 'error');
     }
+}
+
+function copiarTelefone(telefone) {
+    if (!telefone) return;
+    navigator.clipboard.writeText(telefone).then(function() {
+        Swal.fire({ icon: 'success', title: 'Copiado!', text: telefone, timer: 2000, showConfirmButton: false });
+    }).catch(function() {
+        var input = document.createElement('input');
+        input.value = telefone;
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand('copy');
+        document.body.removeChild(input);
+        Swal.fire({ icon: 'success', title: 'Copiado!', timer: 1500, showConfirmButton: false });
+    });
 }
