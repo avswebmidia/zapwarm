@@ -1,4 +1,4 @@
-const API_BASE = 'https://api.zapbulk.com.br';
+const API_BASE = (window.location.origin === 'null' || window.location.origin.includes('file://')) ? 'http://169.58.10.190:8080' : window.location.origin;
 // Na versão final, a Senha Global deve vir de um sistema de login
 const GLOBAL_API_KEY = 'SUA_SENHA_GLOBAL_AQUI'; 
 
@@ -6,7 +6,6 @@ const GLOBAL_API_KEY = 'SUA_SENHA_GLOBAL_AQUI';
 async function apiFetch(endpoint, options = {}) {
     const headers = {
         'Content-Type': 'application/json',
-        'apikey': GLOBAL_API_KEY,
         ...options.headers
     };
     
