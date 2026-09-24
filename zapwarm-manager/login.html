@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#10b981">
+    <title>Zapwarm - Login</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: #fff;
+        }
+        
+        .login-container {
+            background: #fff;
+            border-radius: 24px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.4);
+            padding: 40px 32px;
+            width: 100%;
+            max-width: 420px;
+            color: #1e293b;
+        }
+        
+        .logo {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+        
+        .logo-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            font-size: 36px;
+            color: #fff;
+            box-shadow: 0 8px 24px rgba(16, 185, 129, 0.4);
+        }
+        
+        .logo h1 {
+            font-size: 26px;
+            font-weight: 800;
+            color: #1e293b;
+            margin-bottom: 4px;
+        }
+        
+        .logo h1 span { color: #10b981; }
+        
+        .logo p {
+            font-size: 13px;
+            color: #64748b;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+        
+        .input-wrapper {
+            position: relative;
+        }
+        
+        .input-wrapper i {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            font-size: 16px;
+        }
+        
+        .input-wrapper input {
+            width: 100%;
+            min-height: 52px;
+            padding: 14px 48px 14px 46px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 15px;
+            font-family: inherit;
+            color: #1e293b;
+            transition: all 0.2s;
+        }
+        
+        .input-wrapper input:focus {
+            outline: none;
+            border-color: #10b981;
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15);
+        }
+        
+        .toggle-password {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            padding: 8px;
+            font-size: 16px;
+        }
+        
+        .toggle-password:hover { color: #10b981; }
+        
+        .btn-login {
+            width: 100%;
+            min-height: 52px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+        
+        .btn-login:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+        }
+        
+        .btn-login:active { transform: translateY(0); }
+        
+        .btn-login:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .error-message {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            margin-bottom: 16px;
+            display: none;
+            align-items: center;
+            gap: 8px;
+            border-left: 4px solid #dc2626;
+        }
+        
+        .error-message.show {
+            display: flex;
+            animation: shake 0.4s;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-6px); }
+            75% { transform: translateX(6px); }
+        }
+        
+        .footer-info {
+            text-align: center;
+            margin-top: 24px;
+            font-size: 12px;
+            color: #94a3b8;
+            padding-top: 20px;
+            border-top: 1px solid #f1f5f9;
+        }
+        
+        .footer-info a {
+            color: #10b981;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .footer-info a:hover { text-decoration: underline; }
+        
+        .loader {
+            display: none;
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .btn-login.loading .loader { display: block; }
+        .btn-login.loading .btn-text { display: none; }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo">
+            <div class="logo-icon">
+                <i class="fa-solid fa-fire"></i>
+            </div>
+            <h1>Zap<span>warm</span></h1>
+            <p>Painel de Gerenciamento</p>
+        </div>
+        
+        <div id="error-message" class="error-message">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <span id="error-text">API Key inválida</span>
+        </div>
+        
+        <form id="login-form">
+            <div class="form-group">
+                <label for="api-key">Global API Key</label>
+                <div class="input-wrapper">
+                    <i class="fa-solid fa-key"></i>
+                    <input type="password" id="api-key" placeholder="Digite sua API Key" autofocus autocomplete="current-password">
+                    <button type="button" class="toggle-password" id="toggle-password" title="Mostrar/ocultar">
+                        <i class="fa-solid fa-eye"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn-login" id="btn-login">
+                <span class="btn-text">
+                    <i class="fa-solid fa-right-to-bracket"></i> Entrar
+                </span>
+                <span class="loader"></span>
+            </button>
+        </form>
+        
+        <div class="footer-info">
+            <i class="fa-solid fa-shield-halved"></i> Acesso restrito<br>
+            Perdeu a chave? Verifique o arquivo <code>.env</code> do servidor
+        </div>
+    </div>
+    
+    <script>
+    const API_BASE = window.location.origin;
+    
+    const form = document.getElementById('login-form');
+    const input = document.getElementById('api-key');
+    const btnLogin = document.getElementById('btn-login');
+    const errorMsg = document.getElementById('error-message');
+    const errorText = document.getElementById('error-text');
+    const togglePassword = document.getElementById('toggle-password');
+    
+    // Toggle mostrar/ocultar senha
+    togglePassword.addEventListener('click', () => {
+        const isPassword = input.type === 'password';
+        input.type = isPassword ? 'text' : 'password';
+        togglePassword.innerHTML = isPassword 
+            ? '<i class="fa-solid fa-eye-slash"></i>' 
+            : '<i class="fa-solid fa-eye"></i>';
+    });
+    
+    // Submit do login
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const apiKey = input.value.trim();
+        if (!apiKey) {
+            showError('Digite a API Key');
+            return;
+        }
+        
+        btnLogin.classList.add('loading');
+        btnLogin.disabled = true;
+        errorMsg.classList.remove('show');
+        
+        try {
+            const res = await fetch(API_BASE + '/auth/verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ apiKey })
+            });
+            
+            const data = await res.json();
+            
+            if (data.success) {
+                // Salvar a chave no localStorage
+                localStorage.setItem('zapwarm_api_key', apiKey);
+                
+                // Redirecionar para o painel
+                window.location.href = '/manager/index.html?key=' + encodeURIComponent(apiKey);
+            } else {
+                showError(data.error || 'API Key inválida');
+                btnLogin.classList.remove('loading');
+                btnLogin.disabled = false;
+                input.focus();
+                input.select();
+            }
+        } catch (err) {
+            showError('Erro de conexão: ' + err.message);
+            btnLogin.classList.remove('loading');
+            btnLogin.disabled = false;
+        }
+    });
+    
+    function showError(msg) {
+        errorText.textContent = msg;
+        errorMsg.classList.add('show');
+        
+        // Vibração em mobile
+        if (navigator.vibrate) navigator.vibrate(200);
+    }
+    
+    // Verificar se já está autenticado
+    window.addEventListener('load', async () => {
+        const savedKey = localStorage.getItem('zapwarm_api_key');
+        if (savedKey) {
+            try {
+                const res = await fetch(API_BASE + '/auth/check', {
+                    headers: { 'X-API-Key': savedKey }
+                });
+                const data = await res.json();
+                
+                if (data.success && data.valid) {
+                    // Chave válida, redirecionar automaticamente
+                    window.location.href = '/manager/index.html?key=' + encodeURIComponent(savedKey);
+                } else {
+                    // Chave inválida, limpar
+                    localStorage.removeItem('zapwarm_api_key');
+                }
+            } catch (e) {
+                console.warn('Erro ao verificar chave salva:', e);
+            }
+        }
+    });
+    </script>
+</body>
+</html>

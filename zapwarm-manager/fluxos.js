@@ -185,11 +185,26 @@ function adicionarNo() {
         inputValidator: (value) => {
             if (!value) return 'Informe um nome';
             if (!/^[a-z0-9_]+$/i.test(value)) return 'Use apenas letras, números e _';
-            if (fluxoAtual[value]) return 'Esse nó já existe';
+            if (fluxoAtual && fluxoAtual[value]) return 'Esse nó já existe';
             return null;
         }
     }).then((result) => {
         if (result.isConfirmed) {
+            // Garantir que fluxoAtual existe
+            if (!fluxoAtual || typeof fluxoAtual !== 'object') {
+                fluxoAtual = {
+                    inicio: {
+                        title: '🎯 Menu Principal',
+                        text: 'Olá! Como podemos te ajudar?',
+                        footer: 'AVS Infotec',
+                        buttons: [
+                            { id: 'voltar', text: '↩️ Voltar', next: 'inicio' }
+                        ]
+                    }
+                };
+                console.log('[fluxos] fluxoAtual inicializado automaticamente');
+            }
+            
             fluxoAtual[result.value] = {
                 title: '🎯 Novo Menu',
                 text: 'Digite uma mensagem aqui...',

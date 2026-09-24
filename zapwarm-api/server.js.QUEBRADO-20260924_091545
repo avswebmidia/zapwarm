@@ -15,7 +15,6 @@ const {
   isJidGroup,
   isJidUser,
 } = require('@whiskeysockets/baileys');
-const { sendButtons } = require('@qadeerxtech/qadeer-btns');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -41,46 +40,49 @@ const instances = new Map();
 const webhooks = new Map();
 
 // --- INÍCIO IA (Groq) ---
+const botConfigs = loadBotConfigs();
 
 // ============================================================
-// PERSISTENCIA DO BOT IA (bot-configs.json)
+// SISTEMA DE PESQUISA (NPS) + TIMEOUT
 // ============================================================
-const BOT_CONFIG_FILE = require('path').join(__dirname, 'bot-configs.json');
+const pesquisaConfigs = new Map();
+const ultimaInteracao = new Map();
+const pesquisasEnviadas = new Map();
 
-function loadBotConfigs() {
+const PESQUISA_CONFIG_FILE = path.join(__dirname, 'pesquisa-configs.json');
+
+function loadPesquisaConfigs() {
   try {
-    if (require('fs').existsSync(BOT_CONFIG_FILE)) {
-      const data = JSON.parse(require('fs').readFileSync(BOT_CONFIG_FILE, 'utf8'));
-      const map = new Map();
-      for (const [k, v] of Object.entries(data)) map.set(k, v);
-      console.log('Bot IA: ' + map.size + ' config(s) carregada(s) do disco');
-      return map;
+    if (fs.existsSync(PESQUISA_CONFIG_FILE)) {
+      const data = JSON.parse(fs.readFileSync(PESQUISA_CONFIG_FILE, 'utf8'));
+      for (const [k, v] of Object.entries(data)) pesquisaConfigs.set(k, v);
+      console.log('Pesquisa: ' + pesquisaConfigs.size + ' config(s) carregada(s)');
     }
-  } catch (e) { console.error('Erro ao carregar bot-configs:', e.message); }
-  return new Map();
+  } catch (e) { console.error('Erro loadPesquisa:', e.message); }
 }
 
-function saveBotConfigs() {
+function savePesquisaConfigs() {
   try {
     const obj = {};
-    for (const [k, v] of botConfigs.entries()) obj[k] = v;
-    require('fs').writeFileSync(BOT_CONFIG_FILE, JSON.stringify(obj, null, 2));
-  } catch (e) { console.error('Erro ao salvar bot-configs:', e.message); }
+    for (const [k, v] of pesquisaConfigs.entries()) obj[k] = v;
+    fs.writeFileSync(PESQUISA_CONFIG_FILE, JSON.stringify(obj, null, 2));
+  } catch (e) { console.error('Erro savePesquisa:', e.message); }
 }
 
-const botConfigs = loadBotConfigs();
+loadPesquisaConfigs();
+
 
 // ============================================================
 // SISTEMA DE FLUXO (Typebot-style)
 // ============================================================
-const FLOWS_DIR = require('path').join(__dirname, 'flows');
-if (!require('fs').existsSync(FLOWS_DIR)) require('fs').mkdirSync(FLOWS_DIR, { recursive: true });
+const FLOWS_DIR = path.join(__dirname, 'flows');
+if (!fs.existsSync(FLOWS_DIR)) fs.mkdirSync(FLOWS_DIR, { recursive: true });
 
 function carregarFluxo(nome) {
   try {
-    const file = require('path').join(FLOWS_DIR, nome + '.json');
-    if (!require('fs').existsSync(file)) return null;
-    return JSON.parse(require('fs').readFileSync(file, 'utf8'));
+    const file = path.join(FLOWS_DIR, nome + '.json');
+    if (!fs.existsSync(file)) return null;
+    return JSON.parse(fs.readFileSync(file, 'utf8'));
   } catch (e) {
     console.error('Erro ao carregar fluxo ' + nome + ':', e.message);
     return null;
@@ -210,7 +212,6 @@ async function startInstance(name, token, phoneNumber = null) {
 
   // --- LÓGICA DE INTELIGÊNCIA ARTIFICIAL (BOT NATIVO) ---
   // Sistema de Pesquisa (NPS) + Timeout
-const pesquisaConfigs = new Map();
 const ultimaInteracao = new Map();
 const pesquisasEnviadas = new Map();
 
@@ -219,164 +220,73 @@ sock.ev.on('messages.upsert', async (m) => {
     for (const msg of m.messages) {
       if (!msg.message || msg.key.fromMe) continue;
 
+      const config = botConfigs.get(name);
+      if (!config || !config.active || !config.prompt) continue;
+
       const remoteJid = msg.key.remoteJid;
       if (remoteJid.includes('@g.us')) continue;
-
+      
       // ============================================================
-      // 1. DETECTAR TEXTO OU CLIQUE
+      // REGISTRAR INTERAÇÃO (para timeout de pesquisa)
       // ============================================================
-      let textMessage = '';
-      let isButtonClick = false;
-      let buttonId = '';
+      ultimaInteracao.set(remoteJid, Date.now());
+      // Limpar flag de pesquisa enviada para permitir novo envio futuro
+      pesquisasEnviadas.delete(remoteJid);
 
-      if (msg.message.buttonsResponseMessage) {
-        buttonId = msg.message.buttonsResponseMessage.selectedButtonId;
-        textMessage = buttonId;
-        isButtonClick = true;
-      } else if (msg.message.templateButtonReplyMessage) {
-        buttonId = msg.message.templateButtonReplyMessage.selectedId;
-        textMessage = buttonId;
-        isButtonClick = true;
-      } else if (msg.message.listResponseMessage) {
-        buttonId = msg.message.listResponseMessage.singleSelectReply?.selectedRowId;
-        textMessage = buttonId;
-        isButtonClick = true;
-      } else {
-        textMessage = msg.message.conversation ||
-                      msg.message.extendedTextMessage?.text ||
-                      msg.message.imageMessage?.caption || '';
-      }
+      const textMessage = msg.message.conversation ||
+                          msg.message.extendedTextMessage?.text ||
+                          msg.message.imageMessage?.caption || '';
 
       if (!textMessage) continue;
 
-      console.log(`📩 [${name}] Mensagem: "${textMessage.substring(0, 50)}" (botão: ${isButtonClick})`);
-
-      // ============================================================
-      // 2. FLUXO FIXO — PRIORIDADE MÁXIMA
-      // ============================================================
-      const fluxoCfg = fluxoConfigs.get(name);
-      if (fluxoCfg && fluxoCfg.enabled) {
-        const flow = carregarFluxo(fluxoCfg.flow || 'padrao');
-        
-        if (flow) {
-          const textoLower = textMessage.toLowerCase().trim();
-          const ehSaudacao = !isButtonClick && /^(oi|ola|olá|bom dia|boa tarde|boa noite|eai|e ai|opa|hey|hi|hello|menu|opcoes|opções|iniciar|start|voltar)$/i.test(textoLower);
-          
-          let proximoNo = null;
-
-          if (ehSaudacao) {
-            proximoNo = 'inicio';
-          } else if (isButtonClick) {
-            const estado = getFluxoEstado(remoteJid);
-            const noAtual = estado ? flow[estado.node] : null;
-            if (noAtual && noAtual.buttons) {
-              const botaoClicado = noAtual.buttons.find(b => b.id === buttonId);
-              if (botaoClicado && botaoClicado.next) proximoNo = botaoClicado.next;
-            }
-            if (!proximoNo) {
-              for (const [nodeName, node] of Object.entries(flow)) {
-                if (node.buttons) {
-                  const btn = node.buttons.find(b => b.id === buttonId);
-                  if (btn && btn.next) { proximoNo = btn.next; break; }
-                }
-              }
-            }
-          }
-
-          if (proximoNo && flow[proximoNo]) {
-            const no = flow[proximoNo];
-            setFluxoEstado(remoteJid, fluxoCfg.flow || 'padrao', proximoNo);
-            console.log(`🔀 [${name}] Fluxo -> ${proximoNo}`);
-            
-            try {
-              await sendButtons(sock, remoteJid, {
-                title: no.title || '',
-                text: no.text || '',
-                footer: no.footer || '',
-                buttons: (no.buttons || []).map(b => ({ id: b.id, text: b.text }))
-              });
-              console.log(`✅ [${name}] Nó "${proximoNo}" enviado`);
-            } catch (e) {
-              console.error(`❌ [${name}] Erro:`, e.message);
-              await sock.sendMessage(remoteJid, { text: no.text || '' });
-            }
-          }
-          continue; // Fluxo tratou, não passa para o bot IA
-        }
-      }
-
-      // ============================================================
-      // 3. BOT IA (Groq) — fallback quando fluxo desativado
-      // ============================================================
-      const config = botConfigs.get(name);
-      if (!config || !config.active || !config.prompt) {
-        console.log(`⚠️  [${name}] Bot IA inativo e fluxo desativado`);
-        continue;
-      }
-
-      if (isButtonClick) {
-        const mapBotoes = {
-          'ver_precos': 'Quero ver os preços dos serviços.',
-          'orcamento': 'Quero solicitar um orçamento.',
-          'atendente': 'Quero falar com um atendente humano.',
-          'horario': 'Qual o horário de funcionamento?',
-          'endereco': 'Qual o endereço e contato?'
-        };
-        textMessage = mapBotoes[buttonId] || `O cliente clicou: ${buttonId}`;
-      }
-
-      const textoLower = textMessage.toLowerCase().trim();
-      const ehSaudacao = !isButtonClick && /^(oi|ola|olá|bom dia|boa tarde|boa noite|eai|e ai|opa|hey|hi|hello|menu|opcoes|opções|iniciar|start)$/i.test(textoLower);
-
-      if (ehSaudacao) {
-        console.log(`🔘 [${name}] Saudação -> menu de botões (IA)`);
-        try {
-          await sendButtons(sock, remoteJid, {
-            title: '🎯 Menu Principal',
-            text: 'Olá! 👋 Sou a *Sofia* da AVS Infotec.\n\nComo posso te ajudar hoje?',
-            footer: 'AVS Infotec - Atendimento 24h',
-            buttons: [
-              { id: 'ver_precos', text: '💰 Ver preços' },
-              { id: 'orcamento', text: '📝 Solicitar orçamento' },
-              { id: 'atendente', text: '📞 Falar com atendente' }
-            ]
-          });
-        } catch (e) {
-          await sock.sendMessage(remoteJid, { text: 'Olá! Como posso ajudar?' });
-        }
-        continue;
-      }
-
       try {
+        let reply = '';
+
         const groqClient = getGroqClient(name);
-        if (!groqClient) {
-          console.error(`❌ [${name}] Groq client não disponível`);
-          continue;
-        }
+        if (groqClient) {
+          if (!botMemory.has(remoteJid)) {
+            botMemory.set(remoteJid, [{ role: 'system', content: config.prompt }]);
+          }
 
-        if (!botMemory.has(remoteJid)) {
-          botMemory.set(remoteJid, [{ role: 'system', content: config.prompt }]);
-        }
-        const history = botMemory.get(remoteJid);
-        history.push({ role: 'user', content: textMessage });
-        if (history.length > 21) history.splice(1, history.length - 21);
+          const history = botMemory.get(remoteJid);
+          history.push({ role: 'user', content: textMessage });
 
-        console.log(`🤖 [${name}] Groq para ${remoteJid}...`);
-        const completion = await groqClient.chat.completions.create({
-          model: "openai/gpt-oss-120b",
-          messages: history,
-        });
-        const reply = completion.choices[0].message.content;
-        history.push({ role: 'assistant', content: reply });
+          if (history.length > 21) {
+            history.splice(1, history.length - 21);
+          }
+
+          console.log(`🤖 [${name}] Respondendo Groq para ${remoteJid}...`);
+
+          const completion = await groqClient.chat.completions.create({
+            model: "openai/gpt-oss-120b",
+            messages: history,
+          });
+
+          reply = completion.choices[0].message.content;
+          history.push({ role: 'assistant', content: reply });
+        } else {
+          console.log(`🤖 [${name}] Respondendo Menu Numérico para ${remoteJid}...`);
+          const userMsg = textMessage.trim();
+
+          if (userMsg === '1') {
+            reply = "Você escolheu *Falar com Atendente*. Um de nossos humanos já vai te responder, aguarde um instante!";
+          } else if (userMsg === '2') {
+            reply = "Você escolheu *Fazer um Pedido*. Acesse nosso cardápio online aqui: https://seucardapio.com";
+          } else if (userMsg === '3') {
+            reply = "Nosso horário de funcionamento é das 18h às 23h, de terça a domingo.";
+          } else {
+            reply = `Olá! O sistema de Inteligência Artificial não está configurado. Este é um menu automático:\n\nDigite a opção desejada:\n*1.* Falar com Atendente\n*2.* Fazer um Pedido\n*3.* Horário de Funcionamento`;
+          }
+        }
 
         await sock.presenceSubscribe(remoteJid);
         await sock.sendPresenceUpdate('composing', remoteJid);
-        await new Promise(r => setTimeout(r, 1500));
+        await new Promise(r => setTimeout(r, 2000));
         await sock.sendPresenceUpdate('paused', remoteJid);
         await sock.sendMessage(remoteJid, { text: reply });
-        console.log(`✅ [${name}] Resposta enviada`);
+
       } catch (err) {
-        console.error(`❌ [${name}] Erro Groq:`, err.message);
+        console.error(`❌ [${name}] Erro no Bot:`, err.message);
       }
     }
   });
@@ -1960,11 +1870,11 @@ app.delete('/bot/apikey', (req, res) => {
 
 app.get('/bot/fluxo/list', (req, res) => {
   try {
-    const files = require('fs').readdirSync(FLOWS_DIR).filter(f => f.endsWith('.json'));
+    const files = fs.readdirSync(FLOWS_DIR).filter(f => f.endsWith('.json'));
     const flows = files.map(f => {
       try {
-        const c = JSON.parse(require('fs').readFileSync(require('path').join(FLOWS_DIR, f), 'utf8'));
-        return { name: f.replace('.json', ''), nodes: Object.keys(c) };
+        const content = JSON.parse(fs.readFileSync(path.join(FLOWS_DIR, f), 'utf8'));
+        return { name: f.replace('.json', ''), nodes: Object.keys(content) };
       } catch (e) {
         return { name: f.replace('.json', ''), nodes: [] };
       }
@@ -1993,7 +1903,7 @@ app.post('/bot/fluxo', (req, res) => {
       enabled: !!enabled,
       flow: flow || 'padrao'
     });
-    console.log('Fluxo ' + (enabled ? 'ATIVADO' : 'DESATIVADO') + ' para ' + data.instance);
+    console.log('Fluxo ' + (enabled ? 'ATIVADO' : 'DESATIVADO') + ' (' + (flow || 'padrao') + ') para ' + data.instance);
     res.json({ success: true, config: fluxoConfigs.get(data.instance) });
   } catch (error) {
     res.status(error.status || 500).json({ success: false, error: error.message });
@@ -2017,9 +1927,9 @@ app.post('/bot/fluxo/:nome', (req, res) => {
     if (!flow || typeof flow !== 'object') {
       return res.status(400).json({ success: false, error: 'flow invalido' });
     }
-    const file = require('path').join(FLOWS_DIR, nome + '.json');
-    require('fs').writeFileSync(file, JSON.stringify(flow, null, 2));
-    console.log('Fluxo ' + nome + ' salvo');
+    const file = path.join(FLOWS_DIR, nome + '.json');
+    fs.writeFileSync(file, JSON.stringify(flow, null, 2));
+    console.log('Fluxo ' + nome + ' salvo (' + Object.keys(flow).length + ' nos)');
     res.json({ success: true, message: 'Fluxo salvo' });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
@@ -2028,8 +1938,8 @@ app.post('/bot/fluxo/:nome', (req, res) => {
 
 app.delete('/bot/fluxo/:nome', (req, res) => {
   try {
-    const file = require('path').join(FLOWS_DIR, req.params.nome + '.json');
-    if (require('fs').existsSync(file)) require('fs').unlinkSync(file);
+    const file = path.join(FLOWS_DIR, req.params.nome + '.json');
+    if (fs.existsSync(file)) fs.unlinkSync(file);
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
